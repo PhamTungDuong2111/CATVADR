@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Chụp Ảnh Thiên Văn</string>
+    <string name="stacking_mode_average">Ngân Hà (Deep Sky)</string>
+    <string name="stacking_mode_star_trails">Vệt Sao (Star Trails)</string>
+    <string name="stacking_mode_kappa_sigma">Khử Vệ Tinh (Kappa-Sigma)</string>
+    <string name="infinity_focus">∞</string>
+</resources>
