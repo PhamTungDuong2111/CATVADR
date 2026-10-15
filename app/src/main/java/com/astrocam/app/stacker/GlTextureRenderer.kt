@@ -334,6 +334,7 @@ class GlTextureRenderer(private val context: Context) {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureToDisplay)
         GLES30.glUniform1i(GLES30.glGetUniformLocation(mtfDisplayProgram, "uAccumulatedTexture"), 0)
+        GLES30.glUniform1i(GLES30.glGetUniformLocation(mtfDisplayProgram, "uApplyStretch"), if (useLiveInput) 0 else 1)
 
         GLES30.glUniform1f(GLES30.glGetUniformLocation(mtfDisplayProgram, "uMidtone"), midtone)
         GLES30.glUniform1f(GLES30.glGetUniformLocation(mtfDisplayProgram, "uBlackPoint"), blackPoint)
@@ -394,6 +395,7 @@ class GlTextureRenderer(private val context: Context) {
             GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, fboTextures[pingPongIndex])
             GLES30.glUniform1i(GLES30.glGetUniformLocation(mtfDisplayProgram, "uAccumulatedTexture"), 0)
+            GLES30.glUniform1i(GLES30.glGetUniformLocation(mtfDisplayProgram, "uApplyStretch"), 1)
 
             GLES30.glUniform1f(GLES30.glGetUniformLocation(mtfDisplayProgram, "uMidtone"), midtone)
             GLES30.glUniform1f(GLES30.glGetUniformLocation(mtfDisplayProgram, "uBlackPoint"), blackPoint)
@@ -476,6 +478,7 @@ class GlTextureRenderer(private val context: Context) {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, inputTexture[0])
         GLES30.glUniform1i(GLES30.glGetUniformLocation(mtfDisplayProgram, "uAccumulatedTexture"), 0)
+        GLES30.glUniform1i(GLES30.glGetUniformLocation(mtfDisplayProgram, "uApplyStretch"), 0)
 
         GLES30.glUniform1f(GLES30.glGetUniformLocation(mtfDisplayProgram, "uMidtone"), midtone)
         GLES30.glUniform1f(GLES30.glGetUniformLocation(mtfDisplayProgram, "uBlackPoint"), blackPoint)

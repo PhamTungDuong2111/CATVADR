@@ -143,6 +143,13 @@ fun AstroAppScreen(
         label = "VideoBlink"
     )
 
+    // Automatically sync camera exposure when stacking completes
+    LaunchedEffect(isCapturing) {
+        if (!isCapturing && cameraState.isCapturing) {
+            cameraController.setCapturing(false)
+        }
+    }
+
     // Simulation Coroutine
     LaunchedEffect(isSimMode) {
         if (isSimMode) {
@@ -177,7 +184,7 @@ fun AstroAppScreen(
         }
 
         // 2b. Augmented Reality Planets Overlay (Vị trí các hành tinh trong Hệ Mặt Trời)
-        if (showPlanetOverlay && (cameraState.mode == AppCameraMode.ASTRO || cameraState.mode == AppCameraMode.PRO)) {
+        if (showPlanetOverlay) {
             PlanetOverlay(
                 planets = currentPlanets,
                 orientation = orientation,
@@ -726,6 +733,7 @@ fun AstroAppScreen(
                                         view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                                         if (isCapturing) {
                                             pipeline.stopStacking()
+                                            cameraController.setCapturing(false)
                                             Toast.makeText(context, "Đã hoàn tất phơi sáng!", Toast.LENGTH_SHORT).show()
                                             coroutineScope.launch {
                                                 delay(300)
@@ -736,6 +744,7 @@ fun AstroAppScreen(
                                                 }
                                             }
                                         } else {
+                                            cameraController.setCapturing(true)
                                             pipeline.startStacking(selectedMode, targetFrames)
                                         }
                                     },

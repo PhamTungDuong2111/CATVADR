@@ -24,7 +24,7 @@ data class CameraState(
     val targetFramesCount: Int = 30,
     val rejectedFramesCount: Int = 0,
     val totalExposureSeconds: Float = 0.0f,
-    val mode: AppCameraMode = AppCameraMode.PHOTO,
+    val mode: AppCameraMode = AppCameraMode.ASTRO,
     val isRecordingVideo: Boolean = false,
     val recordingDurationSeconds: Int = 0,
     val flashMode: FlashMode = FlashMode.OFF,

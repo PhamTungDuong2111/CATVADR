@@ -93,6 +93,7 @@ class Camera2Controller(
             activeCameraId = targetId
 
             val chars = cameraManager.getCameraCharacteristics(targetId)
+            cachedSensorOrientation = chars.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 90
             val facing = chars.get(CameraCharacteristics.LENS_FACING)
             val isFront = (facing == CameraCharacteristics.LENS_FACING_FRONT)
             _state.value = _state.value.copy(isFrontCamera = isFront)
@@ -150,11 +151,9 @@ class Camera2Controller(
         return cameraManager.cameraIdList.firstOrNull()
     }
 
-    fun getSensorOrientation(): Int {
-        val id = activeCameraId ?: return 90
-        val chars = cameraManager.getCameraCharacteristics(id)
-        return chars.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 90
-    }
+    private var cachedSensorOrientation: Int = 90
+    fun getSensorOrientation(): Int = cachedSensorOrientation
+
 
     fun switchCamera() {
         val targetFacing = if (_state.value.isFrontCamera) {
@@ -276,6 +275,13 @@ class Camera2Controller(
     fun setExposureTime(seconds: Float) = updateSettings(exposureTimeSeconds = seconds)
     fun setInfinityFocusLock(locked: Boolean) = updateSettings(isInfinityLocked = locked)
 
+    fun setCapturing(capturing: Boolean) {
+        if (_state.value.isCapturing != capturing) {
+            _state.value = _state.value.copy(isCapturing = capturing)
+            updateCaptureRequest()
+        }
+    }
+
     private fun updateCaptureRequest() {
         val session = captureSession ?: return
         val camera = cameraDevice ?: return
@@ -284,20 +290,31 @@ class Camera2Controller(
 
         try {
             val isAutoMode = (_state.value.mode == AppCameraMode.PHOTO || _state.value.mode == AppCameraMode.VIDEO)
+            val isCapturingNow = _state.value.isCapturing
+
+            // In live preview (idle viewfinder), ALWAYS use TEMPLATE_PREVIEW and auto-exposure
+            // so the viewfinder is bright, smooth (30fps), and responsive for aiming and AR planets!
             val template = when {
                 _state.value.mode == AppCameraMode.VIDEO -> CameraDevice.TEMPLATE_RECORD
-                isAutoMode -> CameraDevice.TEMPLATE_PREVIEW
-                caps?.isManualSensorSupported == true -> CameraDevice.TEMPLATE_MANUAL
+                isCapturingNow && caps?.isManualSensorSupported == true -> CameraDevice.TEMPLATE_MANUAL
                 else -> CameraDevice.TEMPLATE_PREVIEW
             }
 
             val builder = camera.createCaptureRequest(template).apply {
                 addTarget(surface)
 
-                if (isAutoMode) {
-                    // Standard Auto-Exposure and Continuous Auto-Focus for regular Camera mode
+                if (isAutoMode || !isCapturingNow) {
+                    // Standard Auto-Exposure and Continuous Auto-Focus for regular Camera mode and live preview
                     set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
-                    set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                    set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
+
+                    if (_state.value.mode == AppCameraMode.ASTRO && _state.value.isInfinityLocked) {
+                        // In Astro live preview, lock focus to infinity so distant stars are sharp
+                        set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF)
+                        set(CaptureRequest.LENS_FOCUS_DISTANCE, 0.0f)
+                    } else {
+                        set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                    }
 
                     when (_state.value.flashMode) {
                         FlashMode.AUTO -> {
@@ -314,7 +331,7 @@ class Camera2Controller(
                         }
                     }
                 } else {
-                    // Manual Astro / Pro Controls
+                    // Manual Astro / Pro Controls - ONLY ACTIVE DURING ACTUAL CAPTURE / STACKING!
                     if (caps?.isManualSensorSupported == true) {
                         set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF)
                         set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF)

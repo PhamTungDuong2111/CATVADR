@@ -5,6 +5,7 @@ uniform sampler2D uAccumulatedTexture;
 uniform float uMidtone;   // Midtone balance (default ~0.15, lower = brighter faint nebulas)
 uniform float uBlackPoint;// Black clipping point (default ~0.02)
 uniform float uSaturation;// Color saturation factor (default ~1.3)
+uniform int uApplyStretch; // 0 = Clean live viewfinder passthrough, 1 = Astrophotography MTF stretch
 
 in vec2 vTexCoord;
 out vec4 fragColor;
@@ -21,6 +22,12 @@ float mtf(float x, float m) {
 void main() {
     vec4 rawColor = texture(uAccumulatedTexture, vTexCoord);
 
+    // Live viewfinder preview bypass: preserve bright, natural camera feed without clipping
+    if (uApplyStretch == 0) {
+        fragColor = vec4(rawColor.rgb, 1.0);
+        return;
+    }
+
     // 1. Black Point Subtraction & Normalization
     float bpNorm = max(0.0001, 1.0 - uBlackPoint);
     vec3 c = max(vec3(0.0), (rawColor.rgb - vec3(uBlackPoint)) / bpNorm);
@@ -36,3 +43,4 @@ void main() {
 
     fragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
 }
+
