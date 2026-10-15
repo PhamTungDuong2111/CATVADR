@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.astrocam.app.astro.AstroLocationManager
 import com.astrocam.app.camera.Camera2Controller
 import com.astrocam.app.sensor.AstroOrientationSensor
 import com.astrocam.app.stacker.StackingPipeline
@@ -19,12 +20,18 @@ class MainActivity : ComponentActivity() {
     private lateinit var cameraController: Camera2Controller
     private lateinit var pipeline: StackingPipeline
     private lateinit var orientationSensor: AstroOrientationSensor
+    private lateinit var locationManager: AstroLocationManager
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.CAMERA] == true) {
             cameraController.openCamera()
+        }
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
+            locationManager.start()
         }
     }
 
@@ -36,6 +43,7 @@ class MainActivity : ComponentActivity() {
 
         pipeline = StackingPipeline(this)
         orientationSensor = AstroOrientationSensor(this)
+        locationManager = AstroLocationManager(this)
         cameraController = Camera2Controller(this) { image ->
             pipeline.processFrame(image, cameraController.state.value.exposureTimeSeconds)
         }
@@ -45,7 +53,8 @@ class MainActivity : ComponentActivity() {
                 AstroAppScreen(
                     cameraController = cameraController,
                     pipeline = pipeline,
-                    orientationSensor = orientationSensor
+                    orientationSensor = orientationSensor,
+                    locationManager = locationManager
                 )
             }
         }
@@ -54,7 +63,13 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         orientationSensor.start()
-        val neededPermissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+        locationManager.start()
+        val neededPermissions = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
         val missingPermissions = neededPermissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
@@ -68,6 +83,7 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         orientationSensor.stop()
+        locationManager.stop()
         cameraController.closeCamera()
         pipeline.stopStacking()
     }

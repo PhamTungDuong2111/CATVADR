@@ -16,7 +16,12 @@ data class OrientationData(
     val pitch: Float = 0f,       // Góc ngẩng bầu trời (-90° đến +90°)
     val roll: Float = 0f,        // Góc nghiêng chân trời (-180° đến +180°)
     val azimuth: Float = 0f,     // Hướng la bàn (0° - 360°)
-    val isLevel: Boolean = true  // Tripod đã cân bằng đường chân trời (±1.5°)
+    val isLevel: Boolean = true, // Tripod đã cân bằng đường chân trời (±1.5°)
+    val rotationMatrix: FloatArray = floatArrayOf(
+        1f, 0f, 0f,
+        0f, 1f, 0f,
+        0f, 0f, 1f
+    )
 ) {
     val cardinalDirection: String
         get() = when (((azimuth + 22.5f) % 360 / 45f).toInt()) {
@@ -30,6 +35,26 @@ data class OrientationData(
             7 -> "NW (Tây Bắc)"
             else -> "N (Bắc)"
         }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as OrientationData
+        if (pitch != other.pitch) return false
+        if (roll != other.roll) return false
+        if (azimuth != other.azimuth) return false
+        if (isLevel != other.isLevel) return false
+        return rotationMatrix.contentEquals(other.rotationMatrix)
+    }
+
+    override fun hashCode(): Int {
+        var result = pitch.hashCode()
+        result = 31 * result + roll.hashCode()
+        result = 31 * result + azimuth.hashCode()
+        result = 31 * result + isLevel.hashCode()
+        result = 31 * result + rotationMatrix.contentHashCode()
+        return result
+    }
 }
 
 class AstroOrientationSensor(context: Context) : SensorEventListener {
@@ -72,7 +97,8 @@ class AstroOrientationSensor(context: Context) : SensorEventListener {
                 pitch = pitchDeg,
                 roll = rollDeg,
                 azimuth = azimuthDeg,
-                isLevel = isLevel
+                isLevel = isLevel,
+                rotationMatrix = rotationMatrix.clone()
             )
         } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             val ax = event.values[0]
@@ -82,11 +108,26 @@ class AstroOrientationSensor(context: Context) : SensorEventListener {
             val rollDeg = Math.toDegrees(atan2(ax.toDouble(), ay.toDouble())).toFloat()
             val pitchDeg = Math.toDegrees(atan2(-az.toDouble(), sqrt(ax * ax + ay * ay).toDouble())).toFloat()
 
+            // Tạo ma trận xoay tương đối từ pitch & roll
+            val pRad = Math.toRadians(pitchDeg.toDouble())
+            val rRad = Math.toRadians(rollDeg.toDouble())
+            val cosP = kotlin.math.cos(pRad).toFloat()
+            val sinP = kotlin.math.sin(pRad).toFloat()
+            val cosR = kotlin.math.cos(rRad).toFloat()
+            val sinR = kotlin.math.sin(rRad).toFloat()
+
+            val fallbackMatrix = floatArrayOf(
+                cosR, -sinR, 0f,
+                sinR * cosP, cosR * cosP, -sinP,
+                sinR * sinP, cosR * sinP, cosP
+            )
+
             _orientation.value = OrientationData(
                 pitch = pitchDeg,
                 roll = rollDeg,
                 azimuth = 0f,
-                isLevel = abs(rollDeg) < 1.5f
+                isLevel = abs(rollDeg) < 1.5f,
+                rotationMatrix = fallbackMatrix
             )
         }
     }

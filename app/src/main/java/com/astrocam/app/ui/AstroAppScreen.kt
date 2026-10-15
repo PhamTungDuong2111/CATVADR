@@ -33,6 +33,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.astrocam.app.astro.AstroLocationManager
+import com.astrocam.app.astro.PlanetInfo
+import com.astrocam.app.astro.SolarSystemEngine
 import com.astrocam.app.camera.AppCameraMode
 import com.astrocam.app.camera.Camera2Controller
 import com.astrocam.app.camera.FlashMode
@@ -51,6 +54,7 @@ fun AstroAppScreen(
     cameraController: Camera2Controller,
     pipeline: StackingPipeline,
     orientationSensor: AstroOrientationSensor,
+    locationManager: AstroLocationManager,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -65,11 +69,29 @@ fun AstroAppScreen(
     val detectedStars by pipeline.detectedStarCount.collectAsState()
     val histogramData by pipeline.histogramData.collectAsState()
     val orientation by orientationSensor.orientation.collectAsState()
+    val location by locationManager.currentLocation.collectAsState()
 
     var isRedMode by remember { mutableStateOf(false) }
     var showLeveler by remember { mutableStateOf(false) }
+    var showPlanetOverlay by remember { mutableStateOf(true) }
+    var showPlanetBar by remember { mutableStateOf(false) }
     var showHistogram by remember { mutableStateOf(false) }
     var isSimMode by remember { mutableStateOf(false) }
+
+    var selectedPlanet by remember { mutableStateOf<PlanetInfo?>(null) }
+    var targetedPlanet by remember { mutableStateOf<PlanetInfo?>(null) }
+    var currentPlanets by remember { mutableStateOf<List<PlanetInfo>>(emptyList()) }
+
+    // Tính toán tọa độ các hành tinh thời gian thực mỗi 2 giây
+    LaunchedEffect(location) {
+        while (isActive) {
+            currentPlanets = SolarSystemEngine.calculateAllBodies(
+                latitude = location.latitude,
+                longitude = location.longitude
+            )
+            delay(2000)
+        }
+    }
 
     var selectedMode by remember { mutableStateOf(StackingMode.DEEP_SKY_AVERAGE) }
     var targetFrames by remember { mutableStateOf(30) }
@@ -154,6 +176,21 @@ fun AstroAppScreen(
             )
         }
 
+        // 2b. Augmented Reality Planets Overlay (Vị trí các hành tinh trong Hệ Mặt Trời)
+        if (showPlanetOverlay && (cameraState.mode == AppCameraMode.ASTRO || cameraState.mode == AppCameraMode.PRO)) {
+            PlanetOverlay(
+                planets = currentPlanets,
+                orientation = orientation,
+                isRedMode = isRedMode,
+                selectedPlanet = selectedPlanet,
+                targetedPlanet = targetedPlanet,
+                onPlanetSelected = { planet ->
+                    selectedPlanet = planet
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
         // 3. Shutter Flash Effect
         if (isShutterFlashing) {
             Box(
@@ -223,6 +260,21 @@ fun AstroAppScreen(
                             text = "📐",
                             fontSize = 15.sp,
                             color = if (showLeveler) accentColor else Color.Gray
+                        )
+                    }
+
+                    // Planet AR Toggle
+                    IconButton(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                            showPlanetOverlay = !showPlanetOverlay
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Text(
+                            text = "🪐",
+                            fontSize = 15.sp,
+                            color = if (showPlanetOverlay) accentColor else Color.Gray
                         )
                     }
 
@@ -339,7 +391,7 @@ fun AstroAppScreen(
                 }
             }
 
-            // In Astro mode: Star Tracker Badge & Rejection Indicator
+            // In Astro mode: Star Tracker Badge & Rejection Indicator + Planet Bar
             if (cameraState.mode == AppCameraMode.ASTRO) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(
@@ -347,18 +399,47 @@ fun AstroAppScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(bgOverlay)
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = if (isSimMode) "🧪 Giả lập bầu trời" else "⭐ $detectedStars sao nhận diện",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (detectedStars >= 4) (if (isRedMode) Color(0xFFFF5252) else Color(0xFF00E5FF)) else Color.Gray
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(bgOverlay)
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isSimMode) "🧪 Giả lập" else "⭐ $detectedStars sao nhận diện",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (detectedStars >= 4) (if (isRedMode) Color(0xFFFF5252) else Color(0xFF00E5FF)) else Color.Gray
+                            )
+                        }
+
+                        val visibleCount = currentPlanets.count { it.isAboveHorizon }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (showPlanetBar) (if (isRedMode) Color(0x66FF2A4B) else Color(0x4400E5FF)) else bgOverlay)
+                                .border(
+                                    width = if (showPlanetBar) 1.dp else 0.dp,
+                                    color = if (showPlanetBar) accentColor else Color.Transparent,
+                                    shape = RoundedCornerShape(14.dp)
+                                )
+                                .clickable {
+                                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                    showPlanetBar = !showPlanetBar
+                                }
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "🪐 $visibleCount hành tinh",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (showPlanetOverlay) accentColor else Color.Gray
+                            )
+                        }
                     }
 
                     if (rejectedFrames > 0) {
@@ -374,6 +455,29 @@ fun AstroAppScreen(
                                 color = Color(0xFFFFB74D)
                             )
                         }
+                    }
+                }
+
+                // Collapsible Planet Quick Bar
+                AnimatedVisibility(
+                    visible = showPlanetBar,
+                    enter = fadeIn(tween(200)),
+                    exit = fadeOut(tween(150))
+                ) {
+                    Box(modifier = Modifier.padding(top = 8.dp)) {
+                        PlanetQuickBar(
+                            planets = currentPlanets,
+                            selectedPlanet = selectedPlanet,
+                            targetedPlanet = targetedPlanet,
+                            isRedMode = isRedMode,
+                            onPlanetSelected = { planet ->
+                                selectedPlanet = planet
+                            },
+                            onPlanetTargetToggle = { planet ->
+                                targetedPlanet = if (targetedPlanet?.id == planet.id) null else planet
+                            },
+                            onClose = { showPlanetBar = false }
+                        )
                     }
                 }
             }
@@ -723,6 +827,19 @@ fun AstroAppScreen(
                 modeName = selectedMode.displayName,
                 isRedMode = isRedMode,
                 onDismiss = { previewBitmap = null }
+            )
+        }
+
+        // 7. Planet Detail Dialog
+        selectedPlanet?.let { planet ->
+            PlanetDetailDialog(
+                planet = planet,
+                isTargeted = targetedPlanet?.id == planet.id,
+                isRedMode = isRedMode,
+                onTargetToggle = { p ->
+                    targetedPlanet = if (targetedPlanet?.id == p.id) null else p
+                },
+                onDismiss = { selectedPlanet = null }
             )
         }
     }

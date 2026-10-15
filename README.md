@@ -59,3 +59,18 @@ Dự án Android gốc mô phỏng và phát triển theo cơ chế của **Astr
   - Xem ảnh độ phân giải cao sau khi hoàn tất chuỗi phơi sáng.
   - Lưu vào Thư viện Bộ sưu tập ảnh (MediaStore) với 1 cú chạm.
   - Xuất file 16-bit uncompressed TIFF cho các phần mềm xử lý thiên văn chuyên nghiệp (Siril, PixInsight).
+
+### 5. Định vị & Hiển thị Vị trí Các Hành Tinh (AR Solar System Planetary Overlay)
+- **Thuật toán cơ học thiên thể Paul Schlyter & Jean Meeus**:
+  - Tính toán chính xác vị trí góc ngẩng (Altitude) và phương vị la bàn (Azimuth) thời gian thực của Mặt Trời, Mặt Trăng (kèm tính tuần trăng/pha sáng), Sao Kim, Sao Mộc, Sao Hỏa, Sao Thổ, Sao Thủy, Sao Thiên Vương, Sao Hải Vương.
+  - Hỗ trợ định vị GPS tự động và tự động điều chỉnh tọa độ địa tâm (Topocentric coordinates).
+- **Thực tế ảo tăng cường AR Viewfinder**:
+  - Chiếu 3D (Perspective Pinhole Projection) vị trí các hành tinh lên màn hình camera theo ma trận xoay cảm biến góc nghiêng và la bàn.
+  - Vẽ đĩa hành tinh chi tiết: Vành đai Sao Thổ (Saturn rings), dải mây Sao Mộc (Jupiter cloud bands), bề mặt đỏ Sao Hỏa, đĩa sáng lấp lánh Sao Kim, tuần trăng thực của Mặt Trăng.
+  - Đường Hoàng Đạo (Ecliptic): Hiển thị mặt phẳng quỹ đạo hành tinh uốn cong trên vòm trời.
+- **Mũi tên chỉ hướng ngoài màn hình (Off-screen Directional Indicators)**:
+  - Khi điện thoại để trên bàn hoặc quay về hướng khác, các thẻ chỉ báo viền màn hình (`[ 🪐 Sao Mộc ↗ +35° ]`) chỉ chính xác hướng và góc lệch để người dùng lia máy tìm thấy hành tinh ngay lập tức.
+- **Thanh tra cứu hành tinh nhanh (Planet Quick Bar) & Dẫn đường mục tiêu (Target Guidance Lock)**:
+  - Chạm vào hành tinh để kích hoạt vòng ngắm radar dẫn đường, hướng dẫn người dùng xoay và ngẩng máy đến khi khóa mục tiêu (`🎯 ĐÃ KHÓA MỤC TIÊU`).
+  - Hộp thoại chi tiết thiên văn học: Khoảng cách (AU/triệu km), cấp sao biểu kiến (Magnitude), chòm sao hoàng đạo, đường kính và mẹo quan sát.
+
