@@ -13,10 +13,10 @@ import kotlin.math.atan2
 import kotlin.math.sqrt
 
 data class OrientationData(
-    val pitch: Float = 0f,       // Góc ngẩng bầu trời (-90° đến +90°)
-    val roll: Float = 0f,        // Góc nghiêng chân trời (-180° đến +180°)
-    val azimuth: Float = 0f,     // Hướng la bàn (0° - 360°)
-    val isLevel: Boolean = true, // Tripod đã cân bằng đường chân trời (±1.5°)
+    val pitch: Float = 0f,       // Sky pitch angle (-90° to +90°)
+    val roll: Float = 0f,        // Horizon roll angle (-180° to +180°)
+    val azimuth: Float = 0f,     // Compass heading (0° - 360°)
+    val isLevel: Boolean = true, // Tripod horizon leveled (±1.5°)
     val rotationMatrix: FloatArray = floatArrayOf(
         1f, 0f, 0f,
         0f, 1f, 0f,
@@ -25,15 +25,15 @@ data class OrientationData(
 ) {
     val cardinalDirection: String
         get() = when (((azimuth + 22.5f) % 360 / 45f).toInt()) {
-            0 -> "N (Bắc)"
-            1 -> "NE (Đông Bắc)"
-            2 -> "E (Đông)"
-            3 -> "SE (Đông Nam)"
-            4 -> "S (Nam)"
-            5 -> "SW (Tây Nam)"
-            6 -> "W (Tây)"
-            7 -> "NW (Tây Bắc)"
-            else -> "N (Bắc)"
+            0 -> "N (North)"
+            1 -> "NE (Northeast)"
+            2 -> "E (East)"
+            3 -> "SE (Southeast)"
+            4 -> "S (South)"
+            5 -> "SW (Southwest)"
+            6 -> "W (West)"
+            7 -> "NW (Northwest)"
+            else -> "N (North)"
         }
 
     override fun equals(other: Any?): Boolean {
@@ -108,7 +108,7 @@ class AstroOrientationSensor(context: Context) : SensorEventListener {
             val rollDeg = Math.toDegrees(atan2(ax.toDouble(), ay.toDouble())).toFloat()
             val pitchDeg = Math.toDegrees(atan2(-az.toDouble(), sqrt(ax * ax + ay * ay).toDouble())).toFloat()
 
-            // Tạo ma trận xoay tương đối từ pitch & roll
+            // Compute relative rotation matrix from pitch & roll
             val pRad = Math.toRadians(pitchDeg.toDouble())
             val rRad = Math.toRadians(rollDeg.toDouble())
             val cosP = kotlin.math.cos(pRad).toFloat()

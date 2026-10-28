@@ -18,17 +18,17 @@ data class PlanetInfo(
     val symbol: String,
     val color: Color,
     val glowColor: Color,
-    val altitude: Float,        // Góc ngẩng (-90° đến +90°)
-    val azimuth: Float,         // Phương vị (0° đến 360°, 0=Bắc, 90=Đông, 180=Nam, 270=Tây)
-    val distanceAu: Double,     // Khoảng cách tới Trái Đất (AU)
-    val magnitude: Float,       // Độ sáng biểu kiến
-    val constellationVi: String,// Chòm sao hoàng đạo / bầu trời
+    val altitude: Float,        // Altitude angle (-90° to +90°)
+    val azimuth: Float,         // Azimuth (0° to 360°, 0=North, 90=East, 180=South, 270=West)
+    val distanceAu: Double,     // Distance to Earth (AU)
+    val magnitude: Float,       // Apparent magnitude
+    val constellationVi: String,// Constellation name
     val constellationSymbol: String,
     val type: CelestialBodyType = CelestialBodyType.PLANET,
     val descriptionVi: String,
     val observationTipVi: String,
     val diameterKm: Long,
-    val phasePercent: Int = 100 // Chỉ số phần trăm chiếu sáng (cho Mặt Trăng)
+    val phasePercent: Int = 100 // Illumination percentage (for Moon)
 ) {
     val isAboveHorizon: Boolean
         get() = altitude > 0f
@@ -42,34 +42,34 @@ data class PlanetInfo(
     val formattedDistance: String
         get() = when (type) {
             CelestialBodyType.MOON -> String.format(java.util.Locale.US, "%,d km", (distanceAu * 149597870.7).toLong())
-            CelestialBodyType.MILKY_WAY -> "~26.000 năm ánh sáng (Tâm Ngân Hà)"
+            CelestialBodyType.MILKY_WAY -> "~26,000 light-years (Galactic Center)"
             CelestialBodyType.DEEP_SKY -> when (id) {
-                "ANDROMEDA" -> "~2.5 triệu năm ánh sáng"
-                "PLEIADES" -> "~444 năm ánh sáng"
-                "ORION_NEBULA" -> "~1.344 năm ánh sáng"
-                else -> String.format(java.util.Locale.US, "%,.0f năm ánh sáng", distanceAu / 63241.07)
+                "ANDROMEDA" -> "~2.5 million light-years"
+                "PLEIADES" -> "~444 light-years"
+                "ORION_NEBULA" -> "~1,344 light-years"
+                else -> String.format(java.util.Locale.US, "%,.0f light-years", distanceAu / 63241.07)
             }
             CelestialBodyType.STAR -> when (id) {
-                "SIRIUS" -> "8.6 năm ánh sáng"
-                "POLARIS" -> "~433 năm ánh sáng"
-                else -> String.format(java.util.Locale.US, "%,.1f năm ánh sáng", distanceAu / 63241.07)
+                "SIRIUS" -> "8.6 light-years"
+                "POLARIS" -> "~433 light-years"
+                else -> String.format(java.util.Locale.US, "%,.1f light-years", distanceAu / 63241.07)
             }
-            else -> String.format(java.util.Locale.US, "%.2f AU (%,d triệu km)", distanceAu, (distanceAu * 149.6).toLong())
+            else -> String.format(java.util.Locale.US, "%.2f AU (%,d million km)", distanceAu, (distanceAu * 149.6).toLong())
         }
 
     companion object {
         fun getAzimuthDirection(azimuth: Float): String {
             val norm = (azimuth % 360f + 360f) % 360f
             return when (((norm + 22.5f) / 45f).toInt() % 8) {
-                0 -> "Bắc (N)"
-                1 -> "Đông Bắc (NE)"
-                2 -> "Đông (E)"
-                3 -> "Đông Nam (SE)"
-                4 -> "Nam (S)"
-                5 -> "Tây Nam (SW)"
-                6 -> "Tây (W)"
-                7 -> "Tây Bắc (NW)"
-                else -> "Bắc (N)"
+                0 -> "North (N)"
+                1 -> "Northeast (NE)"
+                2 -> "East (E)"
+                3 -> "Southeast (SE)"
+                4 -> "South (S)"
+                5 -> "Southwest (SW)"
+                6 -> "West (W)"
+                7 -> "Northwest (NW)"
+                else -> "North (N)"
             }
         }
     }

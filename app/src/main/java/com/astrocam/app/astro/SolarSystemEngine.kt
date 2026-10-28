@@ -4,9 +4,8 @@ import androidx.compose.ui.graphics.Color
 import kotlin.math.*
 
 /**
- * Thuật toán thiên văn Paul Schlyter & Jean Meeus tính toán tọa độ biểu kiến
- * (Góc ngẩng Altitude & Phương vị Azimuth) thời gian thực của các hành tinh trong Hệ Mặt Trời
- * đối với vị trí quan sát trên Trái Đất (Topocentric Coordinates).
+ * Paul Schlyter & Jean Meeus astronomical algorithms to calculate real-time apparent coordinates
+ * (Altitude & Azimuth) of Solar System celestial bodies from an Earth observer location (Topocentric Coordinates).
  */
 object SolarSystemEngine {
 
@@ -30,38 +29,38 @@ object SolarSystemEngine {
         val norm = normalizeDeg(eclipticLonDeg)
         val idx = ((norm / 30.0).toInt()) % 12
         return when (idx) {
-            0 -> "Bạch Dương" to "♈"
-            1 -> "Kim Ngưu" to "♉"
-            2 -> "Song Tử" to "♊"
-            3 -> "Cự Giải" to "♋"
-            4 -> "Sư Tử" to "♌"
-            5 -> "Xử Nữ" to "♍"
-            6 -> "Thiên Bình" to "♎"
-            7 -> "Bọ Cạp" to "♏"
-            8 -> "Nhân Mã" to "♐"
-            9 -> "Ma Kết" to "♑"
-            10 -> "Bảo Bình" to "♒"
-            11 -> "Song Ngư" to "♓"
-            else -> "Bạch Dương" to "♈"
+            0 -> "Aries" to "♈"
+            1 -> "Taurus" to "♉"
+            2 -> "Gemini" to "♊"
+            3 -> "Cancer" to "♋"
+            4 -> "Leo" to "♌"
+            5 -> "Virgo" to "♍"
+            6 -> "Libra" to "♎"
+            7 -> "Scorpio" to "♏"
+            8 -> "Sagittarius" to "♐"
+            9 -> "Capricorn" to "♑"
+            10 -> "Aquarius" to "♒"
+            11 -> "Pisces" to "♓"
+            else -> "Aries" to "♈"
         }
     }
 
     /**
-     * Tính toán vị trí tất cả các hành tinh cho thời điểm timeMillis tại tọa độ (latitude, longitude)
+     * Compute positions of all celestial bodies for timeMillis at (latitude, longitude)
      */
     fun calculateAllBodies(
         timeMillis: Long = System.currentTimeMillis(),
-        latitude: Double = 21.0285, // Mặc định Hà Nội
+        latitude: Double = 21.0285, // Default Hanoi
         longitude: Double = 105.8542
     ): List<PlanetInfo> {
         val jd = (timeMillis.toDouble() / 86400000.0) + 2440587.5
-        val d = jd - 2451543.5 // Số ngày từ kỷ nguyên 1999 Dec 31.0 (Paul Schlyter orbital elements)
-        val dJ2000 = jd - 2451545.0 // Kỷ nguyên J2000.0 chuẩn IAU (2000 Jan 1.5 TD)
+        val d = jd - 2451543.5 // Days from epoch 1999 Dec 31.0 (Paul Schlyter orbital elements)
+        val dJ2000 = jd - 2451545.0 // Epoch J2000.0 IAU standard (2000 Jan 1.5 TD)
 
         val eclDeg = 23.4393 - 3.563e-7 * d
         val eclRad = Math.toRadians(eclDeg)
 
-        // Tính vị trí Mặt Trời
+        // Calculate Sun position
         val wSun = normalizeDeg(282.9404 + 4.70935e-5 * d)
         val aSun = 1.000000
         val eSun = 0.016709 - 1.151e-9 * d
@@ -74,7 +73,7 @@ object SolarSystemEngine {
         val ys = rSun * sin(lonSunRad)
         val zs = 0.0
 
-        // Giờ thiên văn Greenwich (IAU standard GMST) và địa phương (Local Sidereal Time)
+        // Greenwich Sidereal Time (GMST) and Local Sidereal Time (LST)
         val gmstDeg = normalizeDeg(280.46061837 + 360.98564736629 * dJ2000)
         val lstDeg = normalizeDeg(gmstDeg + longitude)
         val lstRad = Math.toRadians(lstDeg)
@@ -82,7 +81,7 @@ object SolarSystemEngine {
 
         val results = mutableListOf<PlanetInfo>()
 
-        // 1. MẶT TRỜI
+        // 1. SUN
         run {
             val xeq = xs
             val yeq = ys * cos(eclRad) - zs * sin(eclRad)
@@ -96,7 +95,7 @@ object SolarSystemEngine {
             results.add(
                 PlanetInfo(
                     id = "SUN",
-                    nameVi = "Mặt Trời",
+                    nameVi = "Sun",
                     nameEn = "Sun",
                     symbol = "☀️",
                     color = Color(0xFFFFD54F),
@@ -108,19 +107,19 @@ object SolarSystemEngine {
                     constellationVi = constName,
                     constellationSymbol = constSym,
                     type = CelestialBodyType.SUN,
-                    descriptionVi = "Ngôi sao trung tâm của Hệ Mặt Trời, cung cấp nhiệt và ánh sáng nuôi dưỡng sự sống trên Trái Đất.",
-                    observationTipVi = "Cảnh báo: Tuyệt đối KHÔNG nhìn trực tiếp bằng ống nhòm hoặc mắt thường qua kính thiên văn mà không có màng lọc mặt trời chuyên dụng.",
+                    descriptionVi = "Central star of our Solar System, providing heat and light essential for life on Earth.",
+                    observationTipVi = "Warning: NEVER look directly at the Sun with binoculars, cameras, or telescopes without a certified solar filter.",
                     diameterKm = 1392700L
                 )
             )
         }
 
-        // 2. MẶT TRĂNG
+        // 2. MOON
         run {
             val nMoon = normalizeDeg(125.1228 - 0.0529538083 * d)
             val iMoon = 5.1454
             val wMoon = normalizeDeg(318.0634 + 0.1643573223 * d)
-            val aMoon = 60.2666 // Bán kính Trái Đất
+            val aMoon = 60.2666 // Earth radii
             val eMoon = 0.054900
             val mMoon = normalizeDeg(115.3654 + 13.0649929509 * d)
             val mMoonRad = Math.toRadians(mMoon)
@@ -158,18 +157,18 @@ object SolarSystemEngine {
             val (constName, constSym) = getZodiacConstellation(moonLonDeg)
 
             val phaseTitle = when {
-                phasePct < 5 -> "Trăng Non (New Moon)"
-                elongationDeg < 90 -> "Trăng Lưỡi Liềm Đầu Tháng ($phasePct%)"
-                elongationDeg < 170 -> "Trăng Bán Nguyệt Đầu Tháng ($phasePct%)"
-                elongationDeg < 190 -> "Trăng Tròn (Full Moon $phasePct%)"
-                elongationDeg < 270 -> "Trăng Khuyết Cuối Tháng ($phasePct%)"
-                else -> "Trăng Lưỡi Liềm Cuối Tháng ($phasePct%)"
+                phasePct < 5 -> "New Moon"
+                elongationDeg < 90 -> "Waxing Crescent ($phasePct%)"
+                elongationDeg < 170 -> "First Quarter ($phasePct%)"
+                elongationDeg < 190 -> "Full Moon ($phasePct%)"
+                elongationDeg < 270 -> "Waning Gibbous ($phasePct%)"
+                else -> "Waning Crescent ($phasePct%)"
             }
 
             results.add(
                 PlanetInfo(
                     id = "MOON",
-                    nameVi = "Mặt Trăng",
+                    nameVi = "Moon",
                     nameEn = "Moon",
                     symbol = "🌙",
                     color = Color(0xFFECEFF1),
@@ -181,15 +180,15 @@ object SolarSystemEngine {
                     constellationVi = constName,
                     constellationSymbol = constSym,
                     type = CelestialBodyType.MOON,
-                    descriptionVi = "Vệ tinh tự nhiên duy nhất của Trái Đất. Trạng thái pha hiện tại: $phaseTitle.",
-                    observationTipVi = "Thời điểm tốt nhất để quan sát các miệng hố va chạm và rặng núi là quanh đường phân chia sáng-tối (terminator).",
+                    descriptionVi = "Earth's only natural satellite. Current lunar phase: $phaseTitle.",
+                    observationTipVi = "The optimal time to view craters and mountain ridges is along the lunar day-night terminator line.",
                     diameterKm = 3474L,
                     phasePercent = phasePct
                 )
             )
         }
 
-        // 3. CÁC HÀNH TINH (Sao Thủy, Sao Kim, Sao Hỏa, Sao Mộc, Sao Thổ, Thiên Vương, Hải Vương)
+        // 3. PLANETS (Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune)
         data class PlanetParams(
             val id: String,
             val nameVi: String,
@@ -212,7 +211,7 @@ object SolarSystemEngine {
         val planetParamsList = listOf(
             PlanetParams(
                 id = "MERCURY",
-                nameVi = "Sao Thủy",
+                nameVi = "Mercury",
                 nameEn = "Mercury",
                 symbol = "☿",
                 color = Color(0xFFCFD8DC),
@@ -225,12 +224,12 @@ object SolarSystemEngine {
                 M0 = 168.6562, Md = 4.0923344368,
                 baseMag = -0.4f,
                 diameterKm = 4879L,
-                descriptionVi = "Hành tinh gần Mặt Trời nhất và nhỏ nhất trong Hệ Mặt Trời. Nhiệt độ dao động từ -180°C ban đêm đến 430°C ban ngày.",
-                tipVi = "Quan sát tốt nhất vào lúc chạng vạng hoàng hôn hoặc bình minh khi đạt góc ly giác cực đại."
+                descriptionVi = "Closest planet to the Sun and smallest in the Solar System. Temperatures range from -180°C at night to 430°C by day.",
+                tipVi = "Best observed during twilight at dawn or dusk when reaching greatest elongation."
             ),
             PlanetParams(
                 id = "VENUS",
-                nameVi = "Sao Kim",
+                nameVi = "Venus",
                 nameEn = "Venus",
                 symbol = "♀",
                 color = Color(0xFFFFF9C4),
@@ -243,12 +242,12 @@ object SolarSystemEngine {
                 M0 = 48.0052, Md = 1.6021302244,
                 baseMag = -4.4f,
                 diameterKm = 12104L,
-                descriptionVi = "Thiên thể tự nhiên sáng thứ ba trên bầu trời đêm sau Mặt Trời và Mặt Trăng. Dân gian gọi là Sao Hôm (hoàng hôn) hoặc Sao Mai (bình minh).",
-                tipVi = "Dễ dàng nhìn thấy bằng mắt thường ngay cả khi hoàng hôn chưa tắt hẳn vì phản xạ ánh sáng cực mạnh từ lớp mây axit sulfuric dày đặc."
+                descriptionVi = "Third brightest celestial object in the sky after the Sun and Moon. Often called the Morning Star or Evening Star.",
+                tipVi = "Easily visible to the naked eye even during dusk due to strong light reflection from thick sulfuric acid clouds."
             ),
             PlanetParams(
                 id = "MARS",
-                nameVi = "Sao Hỏa",
+                nameVi = "Mars",
                 nameEn = "Mars",
                 symbol = "♂",
                 color = Color(0xFFFF7043),
@@ -261,12 +260,12 @@ object SolarSystemEngine {
                 M0 = 18.6021, Md = 0.5240207766,
                 baseMag = -1.2f,
                 diameterKm = 6779L,
-                descriptionVi = "Hành tinh Đỏ thứ 4 từ Mặt Trời. Có núi lửa Olympus Mons cao nhất Hệ Mặt Trời (21.9 km) và hẻm núi Valles Marineris kỳ vĩ.",
-                tipVi = "Hiện lên với ánh sáng đỏ cam đặc trưng rất dễ phân biệt bằng mắt thường trên nền sao."
+                descriptionVi = "The Red Planet, 4th from the Sun. Home to Olympus Mons (21.9 km high) and the magnificent Valles Marineris canyon.",
+                tipVi = "Appears with a characteristic reddish-orange glow, easy to spot with the naked eye against background stars."
             ),
             PlanetParams(
                 id = "JUPITER",
-                nameVi = "Sao Mộc",
+                nameVi = "Jupiter",
                 nameEn = "Jupiter",
                 symbol = "♃",
                 color = Color(0xFFFFCC80),
@@ -279,12 +278,12 @@ object SolarSystemEngine {
                 M0 = 19.8950, Md = 0.0830853001,
                 baseMag = -2.7f,
                 diameterKm = 139820L,
-                descriptionVi = "Hành tinh lớn nhất trong Hệ Mặt Trời, khối lượng lớn hơn 2.5 lần tất cả các hành tinh khác cộng lại. Nổi tiếng với Vết Đỏ Lớn khổng lồ.",
-                tipVi = "Dùng ống nhòm thông thường có thể nhìn thấy 4 vệ tinh Galileo lớn: Io, Europa, Ganymede và Callisto xếp thẳng hàng."
+                descriptionVi = "Largest planet in the Solar System, more massive than all other planets combined. Famous for its iconic Great Red Spot.",
+                tipVi = "Standard binoculars easily reveal the four large Galilean moons: Io, Europa, Ganymede, and Callisto in a straight line."
             ),
             PlanetParams(
                 id = "SATURN",
-                nameVi = "Sao Thổ",
+                nameVi = "Saturn",
                 nameEn = "Saturn",
                 symbol = "♄",
                 color = Color(0xFFFFE082),
@@ -297,12 +296,12 @@ object SolarSystemEngine {
                 M0 = 316.9670, Md = 0.0334442282,
                 baseMag = 0.4f,
                 diameterKm = 116460L,
-                descriptionVi = "Chúa tể những chiếc vành đai. Hệ thống vành đai ngoạn mục cấu thành từ hàng tỷ hạt băng và bụi đá quay quanh hành tinh khí.",
-                tipVi = "Kính thiên văn cỡ nhỏ (độ phóng đại 30x trở lên) là đủ để chiêm ngưỡng rõ ràng vành đai và vệ tinh khổng lồ Titan."
+                descriptionVi = "The Jewel of the Solar System. Breathtaking ring system composed of billions of ice and rock particles orbiting a gas giant.",
+                tipVi = "A small telescope (30x magnification or higher) is sufficient to clearly view the rings and giant moon Titan."
             ),
             PlanetParams(
                 id = "URANUS",
-                nameVi = "Sao Thiên Vương",
+                nameVi = "Uranus",
                 nameEn = "Uranus",
                 symbol = "♅",
                 color = Color(0xFF80DEEA),
@@ -315,12 +314,12 @@ object SolarSystemEngine {
                 M0 = 142.5905, Md = 0.011725806,
                 baseMag = 5.7f,
                 diameterKm = 50724L,
-                descriptionVi = "Hành tinh băng khổng lồ có bầu khí quyển chứa hydro, heli và methane tạo nên màu lục lam thơ mộng. Trục tự quay nghiêng tới 97.8°.",
-                tipVi = "Nằm ở ngưỡng nhạy của mắt thường trong điều kiện trời đêm cực tối (Bortle 1-2). Nên dùng ống nhòm để xác định dưới dạng chấm xanh nhạt."
+                descriptionVi = "Ice giant planet with an atmosphere rich in hydrogen, helium, and methane creating a cyan-blue hue. Axially tilted at 97.8°.",
+                tipVi = "At the naked-eye limit under pristine dark skies (Bortle 1-2). Binoculars clearly resolve it as a faint bluish dot."
             ),
             PlanetParams(
                 id = "NEPTUNE",
-                nameVi = "Sao Hải Vương",
+                nameVi = "Neptune",
                 nameEn = "Neptune",
                 symbol = "♆",
                 color = Color(0xFF64B5F6),
@@ -333,8 +332,8 @@ object SolarSystemEngine {
                 M0 = 260.2471, Md = 0.005995147,
                 baseMag = 7.8f,
                 diameterKm = 49244L,
-                descriptionVi = "Hành tinh xa xôi nhất trong Hệ Mặt Trời. Có những cơn bão dữ dội nhất với tốc độ gió đo được lên tới 2,100 km/h.",
-                tipVi = "Cần kính thiên văn khẩu độ từ 70mm trở lên để phân biệt đĩa màu xanh lam thẫm giữa hàng ngàn ngôi sao nền."
+                descriptionVi = "The most distant planet in our Solar System. Experiences ferocious supersonic storms with winds clocked at 2,100 km/h.",
+                tipVi = "Requires a telescope with 70mm+ aperture to distinguish its small deep blue disc among field stars."
             )
         )
 
@@ -361,13 +360,13 @@ object SolarSystemEngine {
             val yh = r * (sin(nRad) * cos(vwRad) + cos(nRad) * sin(vwRad) * cos(iRad))
             val zh = r * (sin(vwRad) * sin(iRad))
 
-            // Tọa độ địa tâm (Geocentric)
+            // Geocentric coordinates
             val xg = xh + xs
             val yg = yh + ys
             val zg = zh + zs
             val distAu = sqrt(xg * xg + yg * yg + zg * zg)
 
-            // Đổi sang tọa độ xích đạo (Equatorial)
+            // Convert to Equatorial coordinates
             val xeq = xg
             val yeq = yg * cos(eclRad) - zg * sin(eclRad)
             val zeq = yg * sin(eclRad) + zg * cos(eclRad)
@@ -402,9 +401,9 @@ object SolarSystemEngine {
             )
         }
 
-        // 4. DẢI NGÂN HÀ & TÂM NGÂN HÀ (Sagittarius A*)
+        // 4. MILKY WAY & GALACTIC CENTER (Sagittarius A*)
         run {
-            // Tọa độ Tâm Ngân Hà J2000: RA = 17h 45m 40s (266.417°), Dec = -29° 00' 28" (-29.008°)
+            // Galactic Center coordinates J2000: RA = 17h 45m 40s (266.417°), Dec = -29° 00' 28" (-29.008°)
             val raRad = Math.toRadians(266.4168)
             val decRad = Math.toRadians(-29.0078)
             val haRad = lstRad - raRad
@@ -413,26 +412,26 @@ object SolarSystemEngine {
             results.add(
                 PlanetInfo(
                     id = "MILKY_WAY_CORE",
-                    nameVi = "Tâm Ngân Hà (Sagittarius A*)",
+                    nameVi = "Galactic Center (Sagittarius A*)",
                     nameEn = "Galactic Center",
                     symbol = "🌌",
                     color = Color(0xFFFF80AB),
                     glowColor = Color(0xFFE040FB),
                     altitude = alt,
                     azimuth = az,
-                    distanceAu = 26000.0 * 63241.07, // ~26.000 năm ánh sáng
+                    distanceAu = 26000.0 * 63241.07, // ~26,000 light-years
                     magnitude = -3.0f,
-                    constellationVi = "Nhân Mã",
+                    constellationVi = "Sagittarius",
                     constellationSymbol = "♐",
                     type = CelestialBodyType.MILKY_WAY,
-                    descriptionVi = "Vùng trung tâm đậm đặc và rực rỡ nhất của Dải Ngân Hà, nơi chứa hố đen siêu khối lượng Sagittarius A* nặng gấp 4 triệu lần Mặt Trời.",
-                    observationTipVi = "Thời điểm vàng chụp ảnh: Các đêm mùa hè & thu (tháng 4 - 9) lúc không trăng. Hướng máy về phía Nam khi góc ngẩng > 20°.",
-                    diameterKm = 100000L * 9460730472580L // ~100.000 ly
+                    descriptionVi = "The densest and most luminous region of the Milky Way, hosting the supermassive black hole Sagittarius A* (4 million solar masses).",
+                    observationTipVi = "Prime astrophotography window: Summer & autumn nights (April - September) around new moon. Point camera south when altitude > 20°.",
+                    diameterKm = 100000L * 9460730472580L // ~100,000 ly
                 )
             )
         }
 
-        // 5. CÁC THIÊN THỂ DEEP-SKY NỔI BẬT & NGÔI SAO ĐỊNH HƯỚNG
+        // 5. PROMINENT DEEP-SKY TARGETS & ALIGNMENT STARS
         data class DeepSkyTarget(
             val id: String,
             val nameVi: String,
@@ -454,7 +453,7 @@ object SolarSystemEngine {
         val deepSkyList = listOf(
             DeepSkyTarget(
                 id = "ANDROMEDA",
-                nameVi = "Thiên Hà Tiên Nữ (M31)",
+                nameVi = "Andromeda Galaxy (M31)",
                 nameEn = "Andromeda Galaxy",
                 symbol = "🌀",
                 color = Color(0xFF80DEEA),
@@ -463,15 +462,15 @@ object SolarSystemEngine {
                 decDeg = 41.2687,
                 distLy = 2500000.0,
                 mag = 3.44f,
-                constVi = "Tiên Nữ",
+                constVi = "Andromeda",
                 constSym = "And",
                 type = CelestialBodyType.DEEP_SKY,
-                descVi = "Thiên hà xoắn ốc khổng lồ gần Ngân Hà nhất, chứa hơn 1.000 tỷ ngôi sao. Có thể thấy bằng mắt thường dưới bầu trời tối.",
-                tipVi = "Dùng ống kính tiêu cự 85mm - 200mm và chế độ chụp Stacking phơi sáng để ghi nhận chi tiết đĩa xoắn ốc."
+                descVi = "Nearest major spiral galaxy to the Milky Way, containing over 1 trillion stars. Visible to the naked eye under dark skies.",
+                tipVi = "Use focal lengths between 85mm - 200mm and stacking exposure mode to capture spiral disc details."
             ),
             DeepSkyTarget(
                 id = "ORION_NEBULA",
-                nameVi = "Tinh Vân Lạp Hộ (M42)",
+                nameVi = "Orion Nebula (M42)",
                 nameEn = "Orion Nebula",
                 symbol = "✨",
                 color = Color(0xFFFF8A80),
@@ -480,15 +479,15 @@ object SolarSystemEngine {
                 decDeg = -5.3911,
                 distLy = 1344.0,
                 mag = 4.0f,
-                constVi = "Lạp Hộ (Thợ Săn)",
+                constVi = "Orion",
                 constSym = "Ori",
                 type = CelestialBodyType.DEEP_SKY,
-                descVi = "Nhà trẻ ươm sao sáng và rực rỡ nhất bầu trời, nằm ngay thanh kiếm phía dưới Thắt lưng của chàng thợ săn Orion.",
-                tipVi = "Dễ dàng chụp được đám mây khí phát sáng màu hồng tím ngay cả với máy ảnh điện thoại khi trời trong."
+                descVi = "Brightest diffuse nebula in the sky, located in the sword hanging from Orion's Belt. A vibrant stellar nursery.",
+                tipVi = "The glowing pinkish-purple gas cloud can be captured even with smartphone cameras on clear nights."
             ),
             DeepSkyTarget(
                 id = "PLEIADES",
-                nameVi = "Cụm Sao Tua Rua (M45)",
+                nameVi = "Pleiades (M45)",
                 nameEn = "Pleiades (Seven Sisters)",
                 symbol = "💎",
                 color = Color(0xFF82B1FF),
@@ -497,15 +496,15 @@ object SolarSystemEngine {
                 decDeg = 24.11,
                 distLy = 444.0,
                 mag = 1.6f,
-                constVi = "Kim Ngưu",
+                constVi = "Taurus",
                 constSym = "Tau",
                 type = CelestialBodyType.DEEP_SKY,
-                descVi = "Cụm sao mở màu xanh lam tuyệt đẹp bao phủ bởi màn sương bụi phản xạ ánh sáng kỳ ảo.",
-                tipVi = "Nổi bật trên bầu trời mùa đông. Mắt thường có thể đếm được 6-7 ngôi sao sáng nhất."
+                descVi = "Magnificent open star cluster surrounded by a luminous blue reflection nebula dust cloud.",
+                tipVi = "Prominent in winter skies. The naked eye can readily count 6-7 brightest cluster stars."
             ),
             DeepSkyTarget(
                 id = "SIRIUS",
-                nameVi = "Sao Thiên Lang (Sirius)",
+                nameVi = "Sirius",
                 nameEn = "Sirius",
                 symbol = "⭐",
                 color = Color(0xFFFFFFFF),
@@ -514,15 +513,15 @@ object SolarSystemEngine {
                 decDeg = -16.716,
                 distLy = 8.6,
                 mag = -1.46f,
-                constVi = "Đại Khuyển",
+                constVi = "Canis Major",
                 constSym = "CMa",
                 type = CelestialBodyType.STAR,
-                descVi = "Ngôi sao sáng nhất trên bầu trời đêm của Trái Đất, thuộc chòm sao Đại Khuyển.",
-                tipVi = "Ánh sáng trắng xanh lấp lánh cực mạnh, là mốc lấy nét và căn chỉnh hoàn hảo cho kính thiên văn."
+                descVi = "Brightest star in Earth's night sky, situated in the constellation Canis Major.",
+                tipVi = "Intense sparkling blue-white light serves as an ideal focusing and calibration target."
             ),
             DeepSkyTarget(
                 id = "POLARIS",
-                nameVi = "Sao Bắc Cực (Polaris)",
+                nameVi = "North Star (Polaris)",
                 nameEn = "North Star (Polaris)",
                 symbol = "🌟",
                 color = Color(0xFFFFF9C4),
@@ -531,11 +530,11 @@ object SolarSystemEngine {
                 decDeg = 89.264,
                 distLy = 433.0,
                 mag = 1.98f,
-                constVi = "Tiểu Hùng",
+                constVi = "Ursa Minor",
                 constSym = "UMi",
                 type = CelestialBodyType.STAR,
-                descVi = "Ngôi sao chỉ đúng phương Bắc Thiên Cầu, trung tâm vòng quay của tất cả các chòm sao phía Bắc.",
-                tipVi = "Cực kỳ hữu ích để căn chỉnh trục Bắc (Polar Alignment) khi chụp ảnh vệt sao (Star Trails) hoặc dùng chân bám sao."
+                descVi = "Marks the North Celestial Pole, around which all northern constellations revolve.",
+                tipVi = "Crucial for polar alignment when shooting star trails or using an equatorial tracker."
             )
         )
 
@@ -571,7 +570,7 @@ object SolarSystemEngine {
     }
 
     /**
-     * Tọa độ một điểm trên Dải Ngân Hà
+     * Coordinates of a point along the Milky Way band
      */
     data class MilkyWayPoint(
         val altitude: Float,
@@ -581,8 +580,8 @@ object SolarSystemEngine {
     )
 
     /**
-     * Tính toán chuỗi điểm dọc theo Mặt phẳng Ngân Hà (Galactic Equator b=0°)
-     * sử dụng ma trận quay IAU J2000 chuẩn giữa Tọa độ Thiên hà và Tọa độ Xích đạo.
+     * Calculate points along the Galactic Equator (b=0°)
+     * using IAU J2000 rotation matrix between Galactic and Equatorial coordinates.
      */
     fun calculateMilkyWayPath(
         timeMillis: Long = System.currentTimeMillis(),
@@ -617,10 +616,10 @@ object SolarSystemEngine {
             val (alt, az) = eqToHor(decRad, haRad, latRad)
 
             val label = when (lDeg) {
-                0 -> "Tâm Ngân Hà (Core)"
-                76 -> "Dải Ngân Hà • Cygnus"
-                180 -> "Dải Ngân Hà • Auriga"
-                280 -> "Dải Ngân Hà • Carina"
+                0 -> "Galactic Center (Core)"
+                76 -> "Milky Way • Cygnus"
+                180 -> "Milky Way • Auriga"
+                280 -> "Milky Way • Carina"
                 else -> null
             }
 
@@ -630,7 +629,7 @@ object SolarSystemEngine {
     }
 
     /**
-     * Tính toán chuỗi điểm trên Đường Hoàng Đạo (Ecliptic line) để vẽ quỹ đạo mặt phẳng hệ mặt trời
+     * Calculate points on the Ecliptic line to render the Solar System orbital plane
      */
     fun calculateEclipticPath(
         timeMillis: Long = System.currentTimeMillis(),

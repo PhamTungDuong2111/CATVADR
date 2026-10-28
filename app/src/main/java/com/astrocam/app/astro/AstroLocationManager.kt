@@ -13,12 +13,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class AstroLocation(
-    val latitude: Double = 21.0285,   // Hà Nội, Việt Nam
+    val latitude: Double = 21.0285,   // Hanoi, Vietnam default
     val longitude: Double = 105.8542,
     val altitude: Double = 10.0,
-    val locationName: String = "Hà Nội, Việt Nam",
+    val locationName: String = "Hanoi, Vietnam",
     val isGpsActive: Boolean = false,
-    val magneticDeclination: Float = -1.5f // Miền Bắc VN ~ -1.5°
+    val magneticDeclination: Float = -1.5f // Northern region ~ -1.5°
 )
 
 class AstroLocationManager(private val context: Context) : LocationListener {
@@ -41,7 +41,7 @@ class AstroLocationManager(private val context: Context) : LocationListener {
 
         if (hasFine || hasCoarse) {
             try {
-                // Thử lấy vị trí cuối cùng lưu trong máy
+                // Try to get last known location
                 val lastGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 val lastNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
                 val bestLast = lastGps ?: lastNet
@@ -50,12 +50,12 @@ class AstroLocationManager(private val context: Context) : LocationListener {
                     updateFromLocation(bestLast)
                 }
 
-                // Đăng ký nhận cập nhật nếu di chuyển
+                // Register location updates if moving
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER,
-                        60000L, // Mỗi 1 phút
-                        50f,    // 50 mét
+                        60000L, // Every 1 minute
+                        50f,    // 50 meters
                         this
                     )
                 }
@@ -68,7 +68,7 @@ class AstroLocationManager(private val context: Context) : LocationListener {
                     )
                 }
             } catch (e: Exception) {
-                // Tiếp tục dùng tọa độ mặc định
+                // Fallback to default coordinates
             }
         }
     }

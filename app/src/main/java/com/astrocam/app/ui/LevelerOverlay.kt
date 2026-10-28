@@ -82,11 +82,11 @@ fun LevelerOverlay(
         Text(
             text = String.format(
                 java.util.Locale.US,
-                "%s  |  Góc ngẩng: %+.1f°  |  Nghiêng: %+.1f° %s",
+                "%s  |  Pitch: %+.1f°  |  Roll: %+.1f° %s",
                 orientation.cardinalDirection,
                 orientation.pitch,
                 orientation.roll,
-                if (orientation.isLevel) "✓ CHUẨN" else ""
+                if (orientation.isLevel) "✓ LEVEL" else ""
             ),
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace,

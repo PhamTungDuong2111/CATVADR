@@ -54,8 +54,8 @@ fun AstroControlPanel(
 ) {
     var activeTab by remember { mutableStateOf<String?>("EXPOSURE") } // "EXPOSURE", "STRETCH", null
 
-    // Trạng thái kéo xuống/lên để thu gọn (collapse) hoặc mở rộng (expand) toàn bộ panel điều khiển,
-    // chỉ giữ lại thanh Grip Indicator hiển thị khi đã thu gọn.
+    // Drag state to collapse or expand the entire control panel,
+    // leaving only the Grip Indicator visible when collapsed.
     var isPanelCollapsed by remember { mutableStateOf(false) }
     var dragAccumPx by remember { mutableStateOf(0f) }
     val collapseThresholdPx = 40f
@@ -80,9 +80,9 @@ fun AstroControlPanel(
             .padding(top = 12.dp, bottom = 10.dp, start = 12.dp, end = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Drag / Grip Indicator — vùng chạm rộng hơn thanh hiển thị để dễ kéo bằng ngón tay.
-        // Kéo xuống (dragAccumPx dương vượt ngưỡng) sẽ thu gọn toàn bộ panel bên dưới thanh này;
-        // kéo lên lại (dragAccumPx âm vượt ngưỡng) sẽ mở panel ra lại.
+        // Drag / Grip Indicator — touch area wider than the visible bar for easier dragging.
+        // Drag down (positive dragAccumPx past threshold) collapses panel below;
+        // drag up (negative dragAccumPx past threshold) expands panel back.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,7 +118,7 @@ fun AstroControlPanel(
             )
         }
 
-        // 1. Nội dung panel — thu gọn/mở rộng theo isPanelCollapsed, điều khiển bởi thanh Grip phía trên.
+        // 1. Panel Content — collapsed/expanded according to isPanelCollapsed, controlled by Grip bar above.
         AnimatedVisibility(
             visible = !isPanelCollapsed,
             enter = expandVertically(animationSpec = tween(220)) + fadeIn(tween(220)),
@@ -137,9 +137,9 @@ fun AstroControlPanel(
         ) {
             // Real Modes
             val modes = listOf(
-                Pair(StackingMode.DEEP_SKY_AVERAGE, "🌌 Ngân Hà"),
-                Pair(StackingMode.KAPPA_SIGMA, "🛰️ Khử Vệ Tinh"),
-                Pair(StackingMode.STAR_TRAILS, "🌠 Vệt Sao")
+                Pair(StackingMode.DEEP_SKY_AVERAGE, "🌌 Milky Way"),
+                Pair(StackingMode.KAPPA_SIGMA, "🛰️ Satellite Removal"),
+                Pair(StackingMode.STAR_TRAILS, "🌠 Star Trails")
             )
 
             modes.forEach { (mode, label) ->
@@ -176,7 +176,7 @@ fun AstroControlPanel(
                     .padding(horizontal = 14.dp, vertical = 7.dp)
             ) {
                 Text(
-                    text = "🧪 Thử Nghiệm Trời Ảo",
+                    text = "🧪 Virtual Sky Demo",
                     fontSize = 12.sp,
                     fontWeight = if (isSimMode) FontWeight.Bold else FontWeight.Medium,
                     color = if (isSimMode) Color.Black else (if (isRedMode) Color(0xFFFF8A80) else Color(0xFFFFE082))
@@ -210,7 +210,7 @@ fun AstroControlPanel(
                         color = if (isInfinityLocked) Color.Black else Color.Gray
                     )
                     Text(
-                        text = if (isInfinityLocked) "∞ Vô cực" else "AF Auto",
+                        text = if (isInfinityLocked) "∞ Infinity" else "AF Auto",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isInfinityLocked) Color.Black else Color.White
@@ -231,7 +231,7 @@ fun AstroControlPanel(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "PHƠI SÁNG", fontSize = 9.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                    Text(text = "EXPOSURE", fontSize = 9.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                     Text(
                         text = "${exposureSeconds.toInt()}s",
                         fontSize = 13.sp,
@@ -279,7 +279,7 @@ fun AstroControlPanel(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "SỐ FRAME", fontSize = 9.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                    Text(text = "FRAMES", fontSize = 9.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                     Text(
                         text = "${targetFrames}x",
                         fontSize = 13.sp,
@@ -303,7 +303,7 @@ fun AstroControlPanel(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "⚙️ Kéo Sáng",
+                    text = "⚙️ Stretch",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (activeTab == "STRETCH") Color.Black else accentColor
@@ -321,7 +321,7 @@ fun AstroControlPanel(
                 when (activeTab) {
                     "EXPOSURE" -> {
                         Text(
-                            text = "Tốc độ màn trập (Thời gian phơi sáng mỗi frame)",
+                            text = "Shutter Speed (Exposure time per frame)",
                             fontSize = 11.sp,
                             color = Color.LightGray
                         )
@@ -358,7 +358,7 @@ fun AstroControlPanel(
 
                     "ISO" -> {
                         Text(
-                            text = "Độ nhạy sáng cảm biến (ISO cao để bắt chi tiết tinh vân)",
+                            text = "Sensor Sensitivity (Higher ISO reveals nebula details)",
                             fontSize = 11.sp,
                             color = Color.LightGray
                         )
@@ -395,7 +395,7 @@ fun AstroControlPanel(
 
                     "FRAMES" -> {
                         Text(
-                            text = "Mục tiêu số lượng ảnh xếp chồng (Càng nhiều frame càng khử nhiễu tốt)",
+                            text = "Target Stacking Frames (More frames yield cleaner noise reduction)",
                             fontSize = 11.sp,
                             color = Color.LightGray
                         )
@@ -437,7 +437,7 @@ fun AstroControlPanel(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "✨ Kéo sáng Tinh Vân (Midtone): ${String.format(java.util.Locale.US, "%.2f", midtoneStretch)}",
+                                    text = "✨ Nebula Midtone Stretch: ${String.format(java.util.Locale.US, "%.2f", midtoneStretch)}",
                                     fontSize = 11.sp,
                                     color = Color.LightGray
                                 )
@@ -457,7 +457,7 @@ fun AstroControlPanel(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "🌑 Khử ô nhiễm ánh sáng (Black Point): ${String.format(java.util.Locale.US, "%.3f", blackPoint)}",
+                                    text = "🌑 Light Pollution Removal (Black Point): ${String.format(java.util.Locale.US, "%.3f", blackPoint)}",
                                     fontSize = 11.sp,
                                     color = Color.LightGray
                                 )
@@ -476,7 +476,7 @@ fun AstroControlPanel(
                 }
             }
         }
-        } // đóng Column nội dung panel (mode pills + parameter bar + sub-drawer)
-        } // đóng AnimatedVisibility(!isPanelCollapsed)
+        } // Close panel content Column (mode pills + parameter bar + sub-drawer)
+        } // Close AnimatedVisibility(!isPanelCollapsed)
     }
 }

@@ -82,7 +82,7 @@ fun AstroAppScreen(
     var targetedPlanet by remember { mutableStateOf<PlanetInfo?>(null) }
     var currentPlanets by remember { mutableStateOf<List<PlanetInfo>>(emptyList()) }
 
-    // Tính toán tọa độ các hành tinh thời gian thực mỗi 2 giây
+    // Calculate celestial body coordinates in real-time every 2 seconds
     LaunchedEffect(location) {
         while (isActive) {
             currentPlanets = SolarSystemEngine.calculateAllBodies(
@@ -351,10 +351,10 @@ fun AstroAppScreen(
                         else -> {
                             Text(
                                 text = when (cameraState.mode) {
-                                    AppCameraMode.PHOTO -> "ẢNH • TỰ ĐỘNG"
+                                    AppCameraMode.PHOTO -> "PHOTO • AUTO"
                                     AppCameraMode.VIDEO -> "VIDEO • FHD"
-                                    AppCameraMode.ASTRO -> "THIÊN VĂN"
-                                    AppCameraMode.PRO -> "CHUYÊN NGHIỆP"
+                                    AppCameraMode.ASTRO -> "ASTRO"
+                                    AppCameraMode.PRO -> "PRO"
                                 },
                                 color = Color.White.copy(alpha = 0.85f),
                                 fontSize = 12.sp,
@@ -418,7 +418,7 @@ fun AstroAppScreen(
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (isSimMode) "🧪 Giả lập" else "⭐ $detectedStars sao nhận diện",
+                                text = if (isSimMode) "🧪 Simulation" else "⭐ $detectedStars stars detected",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (detectedStars >= 4) (if (isRedMode) Color(0xFFFF5252) else Color(0xFF00E5FF)) else Color.Gray
@@ -442,7 +442,7 @@ fun AstroAppScreen(
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "🌌 $visibleCount thiên thể",
+                                text = "🌌 $visibleCount bodies",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (showPlanetOverlay) accentColor else Color.Gray
@@ -458,7 +458,7 @@ fun AstroAppScreen(
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "⚠️ Đã lọc: $rejectedFrames",
+                                text = "⚠️ Filtered: $rejectedFrames",
                                 fontSize = 10.sp,
                                 color = Color(0xFFFFB74D)
                             )
@@ -588,11 +588,11 @@ fun AstroAppScreen(
                                     if (bmp != null) {
                                         previewBitmap = bmp
                                     } else {
-                                        Toast.makeText(context, "Chưa có ảnh hoàn chỉnh", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "No completed photo yet", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             } else {
-                                Toast.makeText(context, "Chưa có ảnh chụp nào", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "No photos captured yet", Toast.LENGTH_SHORT).show()
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -636,9 +636,9 @@ fun AstroAppScreen(
                                             cameraController.takePhoto(pipeline) { bmp, uri ->
                                                 if (bmp != null && uri != null) {
                                                     lastThumbnail = bmp
-                                                    Toast.makeText(context, "✅ Đã lưu ảnh vào Thư viện!", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, "✅ Photo saved to Gallery!", Toast.LENGTH_SHORT).show()
                                                 } else {
-                                                    Toast.makeText(context, "❌ Lỗi chụp ảnh", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, "❌ Error capturing photo", Toast.LENGTH_SHORT).show()
                                                 }
                                             }
                                         }
@@ -668,9 +668,9 @@ fun AstroAppScreen(
                                                 view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                                                 cameraController.stopRecording { uri ->
                                                     if (uri != null) {
-                                                        Toast.makeText(context, "✅ Đã lưu video vào Thư viện!", Toast.LENGTH_LONG).show()
+                                                        Toast.makeText(context, "✅ Video saved to Gallery!", Toast.LENGTH_LONG).show()
                                                     } else {
-                                                        Toast.makeText(context, "❌ Không thể lưu video", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, "❌ Failed to save video", Toast.LENGTH_SHORT).show()
                                                     }
                                                 }
                                             }
@@ -686,7 +686,7 @@ fun AstroAppScreen(
                                                 view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                                                 cameraController.startRecording(
                                                     onStarted = {
-                                                        Toast.makeText(context, "🔴 Đang quay video...", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, "🔴 Recording video...", Toast.LENGTH_SHORT).show()
                                                     },
                                                     onError = { err ->
                                                         Toast.makeText(context, err, Toast.LENGTH_LONG).show()
@@ -735,7 +735,7 @@ fun AstroAppScreen(
                                         if (isCapturing) {
                                             pipeline.stopStacking()
                                             cameraController.setCapturing(false)
-                                            Toast.makeText(context, "Đã hoàn tất phơi sáng!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Exposure completed!", Toast.LENGTH_SHORT).show()
                                             coroutineScope.launch {
                                                 delay(300)
                                                 val bmp = pipeline.exportCurrentStackedBitmap()
@@ -790,7 +790,7 @@ fun AstroAppScreen(
                                             cameraController.takePhoto(pipeline) { bmp, uri ->
                                                 if (bmp != null && uri != null) {
                                                     lastThumbnail = bmp
-                                                    Toast.makeText(context, "✅ Đã chụp ảnh PRO!", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, "✅ PRO photo captured!", Toast.LENGTH_SHORT).show()
                                                 }
                                             }
                                         },

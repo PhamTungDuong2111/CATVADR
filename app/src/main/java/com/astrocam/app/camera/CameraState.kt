@@ -1,10 +1,10 @@
 package com.astrocam.app.camera
 
 enum class AppCameraMode(val title: String) {
-    PHOTO("CHỤP ẢNH"),
-    VIDEO("QUAY VIDEO"),
-    ASTRO("THIÊN VĂN"),
-    PRO("CHUYÊN NGHIỆP")
+    PHOTO("PHOTO"),
+    VIDEO("VIDEO"),
+    ASTRO("ASTRO"),
+    PRO("PRO")
 }
 
 enum class FlashMode {

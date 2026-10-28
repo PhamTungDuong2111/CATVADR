@@ -171,7 +171,7 @@ fun PlanetOverlay(
             val focalPixels = (heightPx / 2f) / tan(fovYRad / 2f)
             val rotMat = orientation.rotationMatrix
 
-            // A1. Draw Milky Way Plane Band (Dải Ngân Hà)
+            // A1. Draw Milky Way Plane Band
             val milkyWayPoints = SolarSystemEngine.calculateMilkyWayPath(stepDeg = 3)
             var prevMwPoint: Offset? = null
             val mwGlowColor = if (isRedMode) Color(0x33FF2A4B) else Color(0x289C27B0)
@@ -218,7 +218,7 @@ fun PlanetOverlay(
                 }
             }
 
-            // A2. Draw Ecliptic Path (Đường Hoàng Đạo)
+            // A2. Draw Ecliptic Path
             val eclipticPoints = SolarSystemEngine.calculateEclipticPath(stepDeg = 6)
             var prevPoint: Offset? = null
             val eclipticColor = if (isRedMode) Color(0x33FF2A4B) else Color(0x3300E5FF)
@@ -385,7 +385,7 @@ fun PlanetOverlay(
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = p.nameVi,
+                                text = p.nameEn,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isRedMode) Color(0xFFFF8A9E) else Color.White
@@ -458,7 +458,7 @@ fun PlanetOverlay(
                             fontSize = 12.sp
                         )
                         Text(
-                            text = p.nameVi,
+                            text = p.nameEn,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = if (isRedMode) Color(0xFFFF8A9E) else Color.White
@@ -504,13 +504,13 @@ fun PlanetOverlay(
                         )
                         Column {
                             Text(
-                                text = if (isLocked) "🎯 ĐÃ KHÓA MỤC TIÊU: ${target.nameVi.uppercase()}" else "🧭 HƯỚNG VỀ ${target.nameVi.uppercase()}",
+                                text = if (isLocked) "🎯 TARGET LOCKED: ${target.nameEn.uppercase()}" else "🧭 POINT TOWARDS ${target.nameEn.uppercase()}",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isLocked) (if (isRedMode) Color(0xFFFF5252) else Color(0xFF34D399)) else Color.White
                             )
                             Text(
-                                text = if (isLocked) "Độ cao: ${target.formattedAltitude} • Hướng: ${target.formattedAzimuth}" else "Lệch: ${targetItem.angularDistanceDeg.roundToInt()}° • Xoay điện thoại theo mũi tên",
+                                text = if (isLocked) "Altitude: ${target.formattedAltitude} • Azimuth: ${target.formattedAzimuth}" else "Off by: ${targetItem.angularDistanceDeg.roundToInt()}° • Rotate phone along arrow",
                                 fontSize = 10.sp,
                                 fontFamily = FontFamily.Monospace,
                                 color = Color.White.copy(alpha = 0.8f)

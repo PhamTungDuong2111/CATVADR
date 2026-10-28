@@ -365,7 +365,7 @@ class Camera2Controller(
 
     fun startRecording(onStarted: () -> Unit = {}, onError: (String) -> Unit = {}) {
         if (_state.value.isRecordingVideo) return
-        val camera = cameraDevice ?: run { onError("Camera chưa sẵn sàng"); return }
+        val camera = cameraDevice ?: run { onError("Camera is not ready"); return }
 
         try {
             val file = File(context.cacheDir, "VID_${System.currentTimeMillis()}.mp4")
@@ -437,19 +437,19 @@ class Camera2Controller(
                         onStarted()
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to start media recorder", e)
-                        onError("Lỗi bắt đầu quay: ${e.message}")
+                        onError("Failed to start recording: ${e.message}")
                     }
                 }
 
                 override fun onConfigureFailed(session: CameraCaptureSession) {
                     Log.e(TAG, "Failed to configure video recording session")
-                    onError("Không thể tạo phiên ghi hình")
+                    onError("Failed to configure recording session")
                 }
             }, backgroundHandler)
 
         } catch (e: Exception) {
             Log.e(TAG, "Error starting video recording", e)
-            onError("Lỗi quay video: ${e.message}")
+            onError("Video recording error: ${e.message}")
         }
     }
 

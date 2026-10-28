@@ -61,7 +61,7 @@ fun PlanetQuickBar(
             ) {
                 Text(text = "🌌", fontSize = 13.sp)
                 Text(
-                    text = "THIÊN VĂN & NGÂN HÀ",
+                    text = "CELESTIAL & MILKY WAY",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isRedMode) Color(0xFFFF8A9E) else Color.White
@@ -73,7 +73,7 @@ fun PlanetQuickBar(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "$visibleCount/${planets.size} trên bầu trời",
+                        text = "$visibleCount/${planets.size} in sky",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isRedMode) Color(0xFFFF5252) else Color(0xFF34D399)
@@ -160,7 +160,7 @@ fun PlanetQuickBar(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = p.nameVi,
+                                    text = p.nameEn,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isRedMode) Color(0xFFFF8A9E) else (if (p.isAboveHorizon) Color.White else Color.Gray)

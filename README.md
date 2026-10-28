@@ -1,76 +1,73 @@
-# ChupAnhTV - Ứng Dụng Chụp Ảnh Thiên Văn Android (Live Stacking & Star Alignment)
+# AstroCam (ChupAnhTV) - Android Astrophotography App (Live Stacking & Star Alignment)
 
-Dự án Android gốc mô phỏng và phát triển theo cơ chế của **AstroShader (iOS)** và **Google Camera Astrophotography**, chuyên dùng để chụp dải Ngân Hà (Milky Way), tinh vân, và vệt sao trên điện thoại Android.
-
----
-
-## 📍 Vị trí dự án & File APK cài đặt
-
-- **Thư mục dự án Android Studio**: `C:\Users\Admin\Downloads\ChupAnhTV`
-- **File APK cài đặt trực tiếp trên điện thoại Android**:
-  - `C:\Users\Admin\Downloads\ChupAnhTV\ChupAnhTV.apk` (16.7 MB)
-  - `C:\Users\Admin\Downloads\ChupAnhTV.apk` (Bản copy tiện lợi trong thư mục Downloads)
-  - Đường dẫn build debug: `app/build/outputs/apk/debug/app-debug.apk`
-
-> 📱 **Lưu ý**: File APK là file chuẩn của hệ điều hành Android (chứa native library cho cả `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`), hỗ trợ cài đặt trên tất cả các dòng máy Android thật (Samsung, Xiaomi, Oppo, Vivo, Google Pixel, Realme, v.v.).
+A native Android application inspired by the mechanics of **AstroShader (iOS)** and **Google Camera Astrophotography**, specialized for capturing the Milky Way, nebulae, deep sky objects, and star trails on Android smartphones.
 
 ---
 
-## 🚀 Cách mở và chạy trong Android Studio
+## 📍 Project Location & APK Installation
 
-1. Mở **Android Studio**.
-2. Chọn **File -> Open...** (hoặc Open Project).
-3. Trỏ tới thư mục: `C:\Users\Admin\Downloads\ChupAnhTV`.
-4. Nhấn **OK**, Android Studio sẽ tự động đồng bộ Gradle (đã tích hợp sẵn Gradle Wrapper 8.4 và cấu hình SDK).
-5. Cắm điện thoại Android (bật USB Debugging) hoặc mở máy ảo -> Nhấn nút **Run (Shift + F10)**.
+- **Android Studio Project Path**: `c:\Users\Admin\Downloads\ChupAnhTV-fixed`
+- **Installation APK**:
+  - `ChupAnhTV.apk` (Root directory)
+  - Debug build output: `app/build/outputs/apk/debug/app-debug.apk`
+
+> 📱 **Note**: The APK is built for standard Android systems (including native libraries for `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`), compatible with physical devices across manufacturers (Samsung, Google Pixel, Xiaomi, Oppo, Vivo, Realme, etc.).
 
 ---
 
-## 🌌 Các tính năng kỹ thuật nổi bật
+## 🚀 Opening and Running in Android Studio
 
-### 1. Điều khiển Camera chuyên sâu (Camera2 API Native)
-- **Khóa nét vô cực (Focus at Infinity)**: Đặt `LENS_FOCUS_DISTANCE = 0.0f` để các vì sao luôn sắc nét tối đa, không bị trôi nét trong đêm tối.
-- **Tùy chỉnh ISO thủ công**: Chọn nhanh hoặc trượt từ `ISO 400` đến `ISO 12800` để tăng độ nhạy sáng thu tín hiệu tinh vân mờ.
-- **Thời gian phơi sáng (Shutter Speed)**: 0.5s, 1s, 2s, 4s, 8s, 15s, 30s.
-- **Tắt thuật toán khử nhiễu tự động của hãng**: Tắt `NOISE_REDUCTION_MODE` để tránh làm mờ các ngôi sao nhỏ.
+1. Open **Android Studio**.
+2. Select **File -> Open...** (or Open Project).
+3. Navigate to the project directory.
+4. Click **OK**; Android Studio will automatically sync Gradle (integrated Gradle Wrapper 8.4 and Android SDK config).
+5. Connect an Android device (with USB Debugging enabled) or start an emulator -> Press **Run (Shift + F10)**.
 
-### 2. Thuật toán Cân chỉnh Sao (Star Alignment Algorithm)
-- **Phát hiện sao (Star Detection)**: Phân tích độ sáng cục bộ (local brightness peak) và tính tâm sao với độ chính xác dưới pixel (Subpixel Centroid Calculation) viết bằng C++ (Android NDK) kèm giải thuật dự phòng bằng Kotlin.
-- **Khớp chòm sao & Khử chuyển động tự quay của Trái Đất**:
-  - Dùng thuật toán tam giác sao (Asterism Matching) kết hợp RANSAC để tìm ma trận Affine / Homography giữa các khung hình liên tiếp.
-  - Tự động xoay và tịnh tiến frame mới cho khớp hoàn hảo với frame gốc trước khi cộng dồn.
+---
 
-### 3. Động cơ Xếp chồng ảnh thời gian thực (Live Stacking - OpenGL ES 3.0)
-- **🌌 Ngân Hà (Deep Sky Average Stacking)**: Cộng dồn và chia trung bình độ sáng liên tục trong bộ đệm FP32 (Floating Point Buffer), loại bỏ hạt nhiễu ISO cao, làm mịn nền trời đen và làm nổi bật dải Ngân Hà.
-- **🛰️ Khử Vệ Tinh (Kappa-Sigma Clipping)**: Tự động loại bỏ các pixel tăng sáng bất thường qua các khung hình để xóa sạch vệt máy bay hoặc chùm vệ tinh Starlink bay ngang khung hình.
-- **🌠 Vệt Sao (Star Trails - Maximum Blend)**: Giữ lại giá trị sáng cực đại qua từng frame để tạo ảnh vệt sao quay tròn quanh sao Bắc Cực (Polaris).
+## 🌌 Key Technical Features
 
-### 4. Giao diện (UI/UX) Astrophotography đỉnh cao & Chuyên nghiệp
-- **Chế độ Ánh Sáng Đỏ (Red Night Mode)**: Nút bật tắt chế độ bảo vệ thị lực ban đêm (bước sóng đỏ > 650nm) biến toàn bộ giao diện sang màu đỏ thẫm/đen để mắt người dùng không bị mất khả năng thích ứng bóng tối khi đứng ngoài trời đêm.
-- **Thước cân đường chân trời điện tử (Artificial Horizon Leveler)**:
-  - Tích hợp cảm biến góc nghiêng và la bàn.
-  - Đường chân trời xoay mượt mà theo góc nghiêng của tripod, đổi sang màu XANH LÁ khi máy đạt trạng thái cân bằng tuyệt đối (±1.5°).
-  - Hiển thị góc ngẩng bầu trời (Zenith pitch) và hướng la bàn (Bắc, Nam, Đông, Tây).
-- **Biểu đồ Histogram thời gian thực**: Hiển thị phân bổ ánh sáng vùng tối (Shadows), vùng trung tính (Midtones) và vùng cháy sáng (Highlights) theo thời gian thực.
-- **Nút chụp Shutter hiện đại**: Vòng tròn cảm ứng lớn với viền phát sáng neon và vòng tiến trình đếm khung hình hoàn thành dạng tròn (`12 / 30 ảnh`).
-- **Thanh trượt Kéo sáng động (Dynamic Log/MTF Stretch)**: Kéo sáng chi tiết tinh vân và khử ô nhiễm ánh sáng đô thị ngay trên màn hình Live Viewfinder.
-- **🧪 Chế độ Bầu trời giả lập (Sky Simulator)**: Cho phép bật để kiểm tra thuật toán nhận diện sao, xoay sao và chồng ảnh ngay trong nhà hoặc ban ngày mà không cần đợi trời tối!
-- **Hộp thoại xem kết quả & Xuất file (Result Inspector)**:
-  - Xem ảnh độ phân giải cao sau khi hoàn tất chuỗi phơi sáng.
-  - Lưu vào Thư viện Bộ sưu tập ảnh (MediaStore) với 1 cú chạm.
-  - Xuất file 16-bit uncompressed TIFF cho các phần mềm xử lý thiên văn chuyên nghiệp (Siril, PixInsight).
+### 1. In-Depth Camera Control (Camera2 API Native)
+- **Focus at Infinity**: Locks `LENS_FOCUS_DISTANCE = 0.0f` to keep stars pin-sharp throughout long exposures without night-time hunting.
+- **Manual ISO Control**: Quick presets or sliding adjustment from `ISO 400` to `ISO 12800` to capture faint nebular emissions.
+- **Shutter Speeds**: Presets for 0.5s, 1s, 2s, 4s, 8s, 15s, and 30s.
+- **OEM Noise Reduction Bypass**: Disables hardware `NOISE_REDUCTION_MODE` to prevent subtle star dots from being blurred out.
 
-### 5. Định vị & Hiển thị Vị trí Các Hành Tinh (AR Solar System Planetary Overlay)
-- **Thuật toán cơ học thiên thể Paul Schlyter & Jean Meeus**:
-  - Tính toán chính xác vị trí góc ngẩng (Altitude) và phương vị la bàn (Azimuth) thời gian thực của Mặt Trời, Mặt Trăng (kèm tính tuần trăng/pha sáng), Sao Kim, Sao Mộc, Sao Hỏa, Sao Thổ, Sao Thủy, Sao Thiên Vương, Sao Hải Vương.
-  - Hỗ trợ định vị GPS tự động và tự động điều chỉnh tọa độ địa tâm (Topocentric coordinates).
-- **Thực tế ảo tăng cường AR Viewfinder**:
-  - Chiếu 3D (Perspective Pinhole Projection) vị trí các hành tinh lên màn hình camera theo ma trận xoay cảm biến góc nghiêng và la bàn.
-  - Vẽ đĩa hành tinh chi tiết: Vành đai Sao Thổ (Saturn rings), dải mây Sao Mộc (Jupiter cloud bands), bề mặt đỏ Sao Hỏa, đĩa sáng lấp lánh Sao Kim, tuần trăng thực của Mặt Trăng.
-  - Đường Hoàng Đạo (Ecliptic): Hiển thị mặt phẳng quỹ đạo hành tinh uốn cong trên vòm trời.
-- **Mũi tên chỉ hướng ngoài màn hình (Off-screen Directional Indicators)**:
-  - Khi điện thoại để trên bàn hoặc quay về hướng khác, các thẻ chỉ báo viền màn hình (`[ 🪐 Sao Mộc ↗ +35° ]`) chỉ chính xác hướng và góc lệch để người dùng lia máy tìm thấy hành tinh ngay lập tức.
-- **Thanh tra cứu hành tinh nhanh (Planet Quick Bar) & Dẫn đường mục tiêu (Target Guidance Lock)**:
-  - Chạm vào hành tinh để kích hoạt vòng ngắm radar dẫn đường, hướng dẫn người dùng xoay và ngẩng máy đến khi khóa mục tiêu (`🎯 ĐÃ KHÓA MỤC TIÊU`).
-  - Hộp thoại chi tiết thiên văn học: Khoảng cách (AU/triệu km), cấp sao biểu kiến (Magnitude), chòm sao hoàng đạo, đường kính và mẹo quan sát.
+### 2. Star Alignment Algorithms
+- **Star Detection**: Identifies local brightness peaks and calculates subpixel star centroids in C++ (Android NDK) with a robust Kotlin fallback algorithm.
+- **Constellation Matching & Earth Rotation Compensation**:
+  - Utilizes asterism triangle matching combined with RANSAC to derive affine homography transformation matrices across consecutive frames.
+  - Automatically translates and rotates incoming frames to achieve sub-pixel alignment with reference frames before accumulation.
+
+### 3. Real-Time Stacking Engine (Live Stacking - OpenGL ES 3.0)
+- **🌌 Milky Way (Deep Sky Average Stacking)**: Accumulates and averages pixel values in a 32-bit floating point buffer (FP32), eliminating high-ISO noise, smoothing black sky backgrounds, and revealing faint Milky Way dust lanes.
+- **🛰️ Satellite & Airplane Removal (Kappa-Sigma Clipping)**: Discards transient outlier pixels across frames to eliminate plane trails and Starlink satellite streaks.
+- **🌠 Star Trails (Maximum Blend)**: Retains maximum luminance per pixel across frames to produce concentric star trail arcs around Polaris.
+
+### 4. Astrophotography UI/UX
+- **Red Night Mode**: Night-vision preservation mode (deep red wavelengths > 650nm), adapting the entire interface into deep red tones to preserve scotopic dark adaptation.
+- **Artificial Horizon Leveler**:
+  - Combines device gyroscope, accelerometer, and magnetometer sensors.
+  - Smoothly rotates the virtual horizon with tripod tilt and turns green when the device is level (within ±1.5°).
+  - Displays sky pitch elevation and cardinal compass heading (N, S, E, W).
+- **Real-Time Histogram**: Visualizes shadows, midtones, and highlights dynamic range distribution in real time.
+- **Dynamic MTF / Log Stretch**: Stretches midtones and sets black points on-the-fly directly in the live OpenGL viewfinder.
+- **🧪 Sky Simulator Mode**: Generates synthetic star fields with simulated sky rotation, allowing full testing of detection, tracking, and stacking during daylight or indoors.
+- **Result Inspector & Export**:
+  - High-resolution preview upon exposure completion.
+  - One-tap save to the device photo gallery (MediaStore).
+
+### 5. AR Planetary & Deep Sky Overlay (Solar System Engine)
+- **Orbital Mechanics (Paul Schlyter & Jean Meeus)**:
+  - Real-time altitude and azimuth coordinates for the Sun, Moon (with lunar phases), Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, the Galactic Center, and key Deep Sky targets (Andromeda Galaxy, Orion Nebula, Pleiades, Sirius, Polaris).
+  - Automatically incorporates GPS location and topocentric adjustments.
+- **Augmented Reality Viewfinder**:
+  - 3D pinhole perspective projection displaying celestial bodies aligned to sensor orientation matrices.
+  - Detailed custom rendering: Saturn's rings, Jupiter's atmospheric cloud bands, Mars' reddish hue, Venus sparkle flares, and Moon craters.
+  - Ecliptic line tracing planetary paths across the celestial sphere.
+- **Off-Screen Directional Indicators**:
+  - Screen-edge directional pills guide the user directly towards celestial bodies even when pointing away from targets.
+- **Target Guidance Lock & Planet Quick Bar**:
+  - Target any body to activate radar tracking reticles and guidance banners until locked (`🎯 TARGET LOCKED`).
+  - Detailed scientific inspection sheets: distance, magnitude, constellation, diameter, and astronomical observation tips.
 

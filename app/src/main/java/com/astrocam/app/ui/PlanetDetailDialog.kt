@@ -72,14 +72,14 @@ fun PlanetDetailDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = planet.nameVi,
+                    text = planet.nameEn,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isRedMode) Color(0xFFFF8A9E) else Color.White
                 )
 
                 Text(
-                    text = "${planet.nameEn} • Chòm sao: ${planet.constellationVi} ${planet.constellationSymbol}",
+                    text = "${planet.nameEn} • Constellation: ${planet.constellationVi} ${planet.constellationSymbol}",
                     fontSize = 12.sp,
                     color = if (isRedMode) Color(0xAAFF8A9E) else Color(0xFF94A3B8)
                 )
@@ -100,7 +100,7 @@ fun PlanetDetailDialog(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (planet.isAboveHorizon) "🟢 Đang trên bầu trời (Có thể quan sát)" else "🔴 Dưới đường chân trời (Không nhìn thấy)",
+                        text = if (planet.isAboveHorizon) "🟢 Above Horizon (Observable)" else "🔴 Below Horizon (Not Visible)",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (planet.isAboveHorizon) (if (isRedMode) Color(0xFFFF5252) else Color(0xFF34D399)) else Color(0xFF94A3B8)
@@ -123,7 +123,7 @@ fun PlanetDetailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Góc ngẩng (Altitude):", fontSize = 11.sp, color = Color.Gray)
+                        Text(text = "Altitude:", fontSize = 11.sp, color = Color.Gray)
                         Text(
                             text = planet.formattedAltitude,
                             fontSize = 11.sp,
@@ -137,7 +137,7 @@ fun PlanetDetailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Phương vị (Azimuth):", fontSize = 11.sp, color = Color.Gray)
+                        Text(text = "Azimuth:", fontSize = 11.sp, color = Color.Gray)
                         Text(
                             text = planet.formattedAzimuth,
                             fontSize = 11.sp,
@@ -151,7 +151,7 @@ fun PlanetDetailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Khoảng cách tới Trái Đất:", fontSize = 11.sp, color = Color.Gray)
+                        Text(text = "Distance to Earth:", fontSize = 11.sp, color = Color.Gray)
                         Text(
                             text = planet.formattedDistance,
                             fontSize = 11.sp,
@@ -165,7 +165,7 @@ fun PlanetDetailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Độ sáng biểu kiến (Mag):", fontSize = 11.sp, color = Color.Gray)
+                        Text(text = "Apparent Magnitude (Mag):", fontSize = 11.sp, color = Color.Gray)
                         Text(
                             text = String.format(java.util.Locale.US, "%+.1f mag", planet.magnitude),
                             fontSize = 11.sp,
@@ -179,7 +179,7 @@ fun PlanetDetailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Đường kính thiên thể:", fontSize = 11.sp, color = Color.Gray)
+                        Text(text = "Celestial Diameter:", fontSize = 11.sp, color = Color.Gray)
                         Text(
                             text = String.format(java.util.Locale.US, "%,d km", planet.diameterKm),
                             fontSize = 11.sp,
@@ -198,7 +198,7 @@ fun PlanetDetailDialog(
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        text = "📖 Giới thiệu khoa học",
+                        text = "📖 Scientific Overview",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = accentColor
@@ -220,7 +220,7 @@ fun PlanetDetailDialog(
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        text = "🔭 Mẹo quan sát thiên văn",
+                        text = "🔭 Observation Tips",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isRedMode) Color(0xFFFFB74D) else Color(0xFFFFD54F)
@@ -253,7 +253,7 @@ fun PlanetDetailDialog(
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Text(
-                            text = if (isTargeted) "✕ Bỏ dẫn đường" else "🎯 Dẫn đường mục tiêu",
+                            text = if (isTargeted) "✕ Cancel Tracking" else "🎯 Track Target",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (isTargeted) Color.White else Color.Black
@@ -266,7 +266,7 @@ fun PlanetDetailDialog(
                         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
                     ) {
                         Text(
-                            text = "Đóng",
+                            text = "Close",
                             fontSize = 12.sp,
                             color = Color.White
                         )

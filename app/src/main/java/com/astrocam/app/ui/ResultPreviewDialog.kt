@@ -74,13 +74,13 @@ fun ResultPreviewDialog(
                 ) {
                     Column {
                         Text(
-                            text = "✨ KẾT QUẢ CHỒNG ẢNH SAO",
+                            text = "✨ ASTROPHOTOGRAPHY RESULT",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = accentColor
                         )
                         Text(
-                            text = "$modeName • Đã phơi sáng ${totalExposureSec.toInt()} giây",
+                            text = "$modeName • Total Exposure: ${totalExposureSec.toInt()}s",
                             fontSize = 12.sp,
                             color = Color.LightGray
                         )
@@ -118,19 +118,19 @@ fun ResultPreviewDialog(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     StatChip(
-                        title = "ĐÃ CHỒNG",
-                        value = "${stackedCount} ảnh",
+                        title = "STACKED",
+                        value = "$stackedCount frames",
                         color = Color(0xFF00E676),
                         bgColor = cardBg
                     )
                     StatChip(
-                        title = "LOẠI BỎ",
-                        value = "${rejectedCount} ảnh",
+                        title = "REJECTED",
+                        value = "$rejectedCount frames",
                         color = Color(0xFFFFAB00),
                         bgColor = cardBg
                     )
                     StatChip(
-                        title = "TỔNG SÁNG",
+                        title = "TOTAL EXP",
                         value = "${totalExposureSec.toInt()}s",
                         color = accentColor,
                         bgColor = cardBg
@@ -158,9 +158,9 @@ fun ResultPreviewDialog(
                                     isSaving = false
                                     if (uri != null) {
                                         savedUriString = uri.toString()
-                                        Toast.makeText(context, "✅ Đã lưu ảnh vào Thư viện Bộ sưu tập!", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "✅ Photo saved to Gallery!", Toast.LENGTH_LONG).show()
                                     } else {
-                                        Toast.makeText(context, "❌ Lỗi lưu ảnh vào thư viện", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "❌ Failed to save photo to Gallery", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
@@ -170,7 +170,7 @@ fun ResultPreviewDialog(
                         modifier = Modifier.weight(1f).height(48.dp)
                     ) {
                         Text(
-                            text = if (isSaving) "Đang lưu..." else (if (savedUriString != null) "✓ Đã Lưu Gallery" else "💾 Lưu Vào Thư Viện"),
+                            text = if (isSaving) "Saving..." else (if (savedUriString != null) "✓ Saved to Gallery" else "💾 Save to Gallery"),
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
@@ -183,7 +183,7 @@ fun ResultPreviewDialog(
                         border = androidx.compose.foundation.BorderStroke(1.dp, accentColor.copy(alpha = 0.6f)),
                         modifier = Modifier.height(48.dp)
                     ) {
-                        Text("Tiếp Tục", color = Color.White, fontSize = 14.sp)
+                        Text("Continue", color = Color.White, fontSize = 14.sp)
                     }
                 }
             }
