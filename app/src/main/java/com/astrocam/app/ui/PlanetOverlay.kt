@@ -52,7 +52,8 @@ fun PlanetOverlay(
     selectedPlanet: PlanetInfo?,
     targetedPlanet: PlanetInfo?,
     onPlanetSelected: (PlanetInfo) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    magneticDeclination: Float = 0f
 ) {
     val density = LocalDensity.current
 
@@ -83,8 +84,8 @@ fun PlanetOverlay(
 
         if (widthPx <= 0f || heightPx <= 0f) return@BoxWithConstraints
 
-        // Calculate 3D screen projection for all planets
-        val projectedList = remember(planets, orientation, widthPx, heightPx) {
+        // Calculate 3D screen projection for all celestial bodies
+        val projectedList = remember(planets, orientation, widthPx, heightPx, magneticDeclination) {
             val rotMat = orientation.rotationMatrix
             val fovYDeg = 60f
             val fovYRad = Math.toRadians(fovYDeg.toDouble()).toFloat()
@@ -94,7 +95,7 @@ fun PlanetOverlay(
 
             planets.map { p ->
                 val altRad = Math.toRadians(p.altitude.toDouble())
-                val azRad = Math.toRadians(p.azimuth.toDouble())
+                val azRad = Math.toRadians((p.azimuth - magneticDeclination).toDouble())
 
                 // World celestial vector (X=East, Y=North, Z=Up)
                 val wx = (cos(altRad) * sin(azRad)).toFloat()
@@ -162,7 +163,7 @@ fun PlanetOverlay(
             }
         }
 
-        // 1. CANVAS: Ecliptic line + Planet background graphics + Reticle rings
+        // 1. CANVAS: Milky Way Band + Ecliptic line + Planet background graphics + Reticle rings
         Canvas(modifier = Modifier.fillMaxSize()) {
             val centerX = widthPx / 2f
             val centerY = heightPx / 2f
@@ -170,14 +171,61 @@ fun PlanetOverlay(
             val focalPixels = (heightPx / 2f) / tan(fovYRad / 2f)
             val rotMat = orientation.rotationMatrix
 
-            // A. Draw Ecliptic Path (Đường Hoàng Đạo)
+            // A1. Draw Milky Way Plane Band (Dải Ngân Hà)
+            val milkyWayPoints = SolarSystemEngine.calculateMilkyWayPath(stepDeg = 3)
+            var prevMwPoint: Offset? = null
+            val mwGlowColor = if (isRedMode) Color(0x33FF2A4B) else Color(0x289C27B0)
+            val mwLineColor = if (isRedMode) Color(0x77FF2A4B) else Color(0x88BA68C8)
+
+            for (mw in milkyWayPoints) {
+                val altRad = Math.toRadians(mw.altitude.toDouble())
+                val azRad = Math.toRadians((mw.azimuth - magneticDeclination).toDouble())
+                val wx = (cos(altRad) * sin(azRad)).toFloat()
+                val wy = (cos(altRad) * cos(azRad)).toFloat()
+                val wz = sin(altRad).toFloat()
+
+                val dx = rotMat[0] * wx + rotMat[3] * wy + rotMat[6] * wz
+                val dy = rotMat[1] * wx + rotMat[4] * wy + rotMat[7] * wz
+                val dz = rotMat[2] * wx + rotMat[5] * wy + rotMat[8] * wz
+
+                if (-dz > 0.08f) {
+                    val zF = -dz
+                    val sx = centerX + focalPixels * (dx / zF)
+                    val sy = centerY - focalPixels * (dy / zF)
+                    val pt = Offset(sx, sy)
+
+                    if (prevMwPoint != null && (pt - prevMwPoint).getDistance() < 280f) {
+                        // Wide faint galactic gas cloud band
+                        drawLine(
+                            color = mwGlowColor,
+                            start = prevMwPoint,
+                            end = pt,
+                            strokeWidth = 24f,
+                            cap = StrokeCap.Round
+                        )
+                        // Core starry spine
+                        drawLine(
+                            color = mwLineColor,
+                            start = prevMwPoint,
+                            end = pt,
+                            strokeWidth = 2.4f,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f), ringRotation)
+                        )
+                    }
+                    prevMwPoint = pt
+                } else {
+                    prevMwPoint = null
+                }
+            }
+
+            // A2. Draw Ecliptic Path (Đường Hoàng Đạo)
             val eclipticPoints = SolarSystemEngine.calculateEclipticPath(stepDeg = 6)
             var prevPoint: Offset? = null
             val eclipticColor = if (isRedMode) Color(0x33FF2A4B) else Color(0x3300E5FF)
 
             for ((eAlt, eAz) in eclipticPoints) {
                 val altRad = Math.toRadians(eAlt.toDouble())
-                val azRad = Math.toRadians(eAz.toDouble())
+                val azRad = Math.toRadians((eAz - magneticDeclination).toDouble())
                 val wx = (cos(altRad) * sin(azRad)).toFloat()
                 val wy = (cos(altRad) * cos(azRad)).toFloat()
                 val wz = sin(altRad).toFloat()
@@ -579,6 +627,102 @@ private fun DrawScope.drawPlanetDisc(
                 radius = radius,
                 center = center
             )
+        }
+        "MILKY_WAY_CORE" -> {
+            // Spiral galaxy disc with glowing core
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White, Color(0xFFFF80AB), Color(0x889C27B0), Color.Transparent),
+                    center = center,
+                    radius = radius * 1.6f
+                ),
+                radius = radius * 1.6f,
+                center = center
+            )
+            val ovalW = radius * 2.6f
+            val ovalH = radius * 1.1f
+            drawOval(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0x88BA68C8), Color(0xEEFF80AB), Color(0x887C4DFF))
+                ),
+                topLeft = center - Offset(ovalW / 2f, ovalH / 2f),
+                size = Size(ovalW, ovalH),
+                style = Stroke(width = 2.5f)
+            )
+        }
+        "ANDROMEDA" -> {
+            // Tilted Andromeda galaxy oval with bright nucleus
+            val mw = radius * 2.4f
+            val mh = radius * 0.9f
+            drawOval(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White, Color(0xFF80DEEA), Color(0x4400E5FF), Color.Transparent),
+                    center = center,
+                    radius = radius * 1.5f
+                ),
+                topLeft = center - Offset(mw / 2f, mh / 2f),
+                size = Size(mw, mh)
+            )
+            drawCircle(Color.White, radius = radius * 0.35f, center = center)
+        }
+        "ORION_NEBULA" -> {
+            // Glowing emission nebula cloud
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color(0xFFFF8A80), Color(0xAAFF4081), Color(0x337C4DFF), Color.Transparent),
+                    center = center,
+                    radius = radius * 1.5f
+                ),
+                radius = radius * 1.5f,
+                center = center
+            )
+            drawCircle(Color.White, radius = radius * 0.3f, center = center)
+        }
+        "PLEIADES" -> {
+            // Cluster of dazzling mini stars
+            drawCircle(Color(0x44448AFF), radius = radius * 1.2f, center = center)
+            val offsets = listOf(
+                Offset(0f, 0f),
+                Offset(-radius * 0.4f, -radius * 0.3f),
+                Offset(radius * 0.35f, -radius * 0.4f),
+                Offset(radius * 0.5f, radius * 0.2f),
+                Offset(-radius * 0.3f, radius * 0.4f),
+                Offset(-radius * 0.6f, 0.1f * radius),
+                Offset(0.1f * radius, radius * 0.5f)
+            )
+            for (off in offsets) {
+                drawCircle(Color.White, radius = 2.2f, center = center + off)
+            }
+        }
+        "SIRIUS" -> {
+            // Bright sparkling star
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White, Color(0xFF80D8FF), Color.Transparent),
+                    center = center,
+                    radius = radius * 1.4f
+                ),
+                radius = radius * 1.4f,
+                center = center
+            )
+            val l = radius * 1.8f
+            drawLine(Color.White, center - Offset(l, 0f), center + Offset(l, 0f), 1.5f)
+            drawLine(Color.White, center - Offset(0f, l), center + Offset(0f, l), 1.5f)
+        }
+        "POLARIS" -> {
+            // North star with compass cross
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White, Color(0xFFFFD54F), Color.Transparent),
+                    center = center,
+                    radius = radius * 1.2f
+                ),
+                radius = radius * 1.2f,
+                center = center
+            )
+            val l = radius * 1.5f
+            drawLine(Color(0xFFFFD54F), center - Offset(l, 0f), center + Offset(l, 0f), 1.5f)
+            drawLine(Color(0xFFFFD54F), center - Offset(0f, l), center + Offset(0f, l), 1.5f)
         }
         else -> {
             // Standard planet sphere

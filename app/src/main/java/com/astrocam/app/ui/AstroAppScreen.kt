@@ -183,7 +183,7 @@ fun AstroAppScreen(
             )
         }
 
-        // 2b. Augmented Reality Planets Overlay (Vị trí các hành tinh trong Hệ Mặt Trời)
+        // 2b. Augmented Reality Planets & Milky Way Overlay
         if (showPlanetOverlay) {
             PlanetOverlay(
                 planets = currentPlanets,
@@ -194,6 +194,7 @@ fun AstroAppScreen(
                 onPlanetSelected = { planet ->
                     selectedPlanet = planet
                 },
+                magneticDeclination = location.magneticDeclination,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -441,7 +442,7 @@ fun AstroAppScreen(
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "🪐 $visibleCount hành tinh",
+                                text = "🌌 $visibleCount thiên thể",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (showPlanetOverlay) accentColor else Color.Gray

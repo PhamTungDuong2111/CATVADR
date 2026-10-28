@@ -59,9 +59,9 @@ fun PlanetQuickBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(text = "🪐", fontSize = 13.sp)
+                Text(text = "🌌", fontSize = 13.sp)
                 Text(
-                    text = "VỊ TRÍ CÁC HÀNH TINH",
+                    text = "THIÊN VĂN & NGÂN HÀ",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isRedMode) Color(0xFFFF8A9E) else Color.White

@@ -15,8 +15,10 @@ import kotlinx.coroutines.flow.asStateFlow
 data class AstroLocation(
     val latitude: Double = 21.0285,   // Hà Nội, Việt Nam
     val longitude: Double = 105.8542,
+    val altitude: Double = 10.0,
     val locationName: String = "Hà Nội, Việt Nam",
-    val isGpsActive: Boolean = false
+    val isGpsActive: Boolean = false,
+    val magneticDeclination: Float = -1.5f // Miền Bắc VN ~ -1.5°
 )
 
 class AstroLocationManager(private val context: Context) : LocationListener {
@@ -78,11 +80,25 @@ class AstroLocationManager(private val context: Context) : LocationListener {
     }
 
     private fun updateFromLocation(loc: Location) {
+        val geoField = try {
+            android.hardware.GeomagneticField(
+                loc.latitude.toFloat(),
+                loc.longitude.toFloat(),
+                loc.altitude.toFloat(),
+                System.currentTimeMillis()
+            )
+        } catch (e: Exception) {
+            null
+        }
+        val decl = geoField?.declination ?: -1.5f
+
         _currentLocation.value = AstroLocation(
             latitude = loc.latitude,
             longitude = loc.longitude,
+            altitude = loc.altitude,
             locationName = String.format(java.util.Locale.US, "%.2f°N, %.2f°E", loc.latitude, loc.longitude),
-            isGpsActive = true
+            isGpsActive = true,
+            magneticDeclination = decl
         )
     }
 

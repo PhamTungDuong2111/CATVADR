@@ -6,7 +6,9 @@ enum class CelestialBodyType {
     STAR,
     PLANET,
     MOON,
-    SUN
+    SUN,
+    MILKY_WAY,
+    DEEP_SKY
 }
 
 data class PlanetInfo(
@@ -20,7 +22,7 @@ data class PlanetInfo(
     val azimuth: Float,         // Phương vị (0° đến 360°, 0=Bắc, 90=Đông, 180=Nam, 270=Tây)
     val distanceAu: Double,     // Khoảng cách tới Trái Đất (AU)
     val magnitude: Float,       // Độ sáng biểu kiến
-    val constellationVi: String,// Chòm sao hoàng đạo
+    val constellationVi: String,// Chòm sao hoàng đạo / bầu trời
     val constellationSymbol: String,
     val type: CelestialBodyType = CelestialBodyType.PLANET,
     val descriptionVi: String,
@@ -38,10 +40,21 @@ data class PlanetInfo(
         get() = String.format(java.util.Locale.US, "%.0f° %s", azimuth, getAzimuthDirection(azimuth))
 
     val formattedDistance: String
-        get() = if (id == "MOON") {
-            String.format(java.util.Locale.US, "%,d km", (distanceAu * 149597870.7).toLong())
-        } else {
-            String.format(java.util.Locale.US, "%.2f AU (%,d triệu km)", distanceAu, (distanceAu * 149.6).toLong())
+        get() = when (type) {
+            CelestialBodyType.MOON -> String.format(java.util.Locale.US, "%,d km", (distanceAu * 149597870.7).toLong())
+            CelestialBodyType.MILKY_WAY -> "~26.000 năm ánh sáng (Tâm Ngân Hà)"
+            CelestialBodyType.DEEP_SKY -> when (id) {
+                "ANDROMEDA" -> "~2.5 triệu năm ánh sáng"
+                "PLEIADES" -> "~444 năm ánh sáng"
+                "ORION_NEBULA" -> "~1.344 năm ánh sáng"
+                else -> String.format(java.util.Locale.US, "%,.0f năm ánh sáng", distanceAu / 63241.07)
+            }
+            CelestialBodyType.STAR -> when (id) {
+                "SIRIUS" -> "8.6 năm ánh sáng"
+                "POLARIS" -> "~433 năm ánh sáng"
+                else -> String.format(java.util.Locale.US, "%,.1f năm ánh sáng", distanceAu / 63241.07)
+            }
+            else -> String.format(java.util.Locale.US, "%.2f AU (%,d triệu km)", distanceAu, (distanceAu * 149.6).toLong())
         }
 
     companion object {

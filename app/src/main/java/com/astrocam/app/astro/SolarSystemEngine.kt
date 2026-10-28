@@ -55,7 +55,8 @@ object SolarSystemEngine {
         longitude: Double = 105.8542
     ): List<PlanetInfo> {
         val jd = (timeMillis.toDouble() / 86400000.0) + 2440587.5
-        val d = jd - 2451543.5 // Số ngày từ kỷ nguyên J2000.0
+        val d = jd - 2451543.5 // Số ngày từ kỷ nguyên 1999 Dec 31.0 (Paul Schlyter orbital elements)
+        val dJ2000 = jd - 2451545.0 // Kỷ nguyên J2000.0 chuẩn IAU (2000 Jan 1.5 TD)
 
         val eclDeg = 23.4393 - 3.563e-7 * d
         val eclRad = Math.toRadians(eclDeg)
@@ -73,8 +74,8 @@ object SolarSystemEngine {
         val ys = rSun * sin(lonSunRad)
         val zs = 0.0
 
-        // Giờ thiên văn Greenwich và địa phương (Local Sidereal Time)
-        val gmstDeg = normalizeDeg(280.46061837 + 360.98564736629 * d)
+        // Giờ thiên văn Greenwich (IAU standard GMST) và địa phương (Local Sidereal Time)
+        val gmstDeg = normalizeDeg(280.46061837 + 360.98564736629 * dJ2000)
         val lstDeg = normalizeDeg(gmstDeg + longitude)
         val lstRad = Math.toRadians(lstDeg)
         val latRad = Math.toRadians(latitude)
@@ -401,7 +402,231 @@ object SolarSystemEngine {
             )
         }
 
+        // 4. DẢI NGÂN HÀ & TÂM NGÂN HÀ (Sagittarius A*)
+        run {
+            // Tọa độ Tâm Ngân Hà J2000: RA = 17h 45m 40s (266.417°), Dec = -29° 00' 28" (-29.008°)
+            val raRad = Math.toRadians(266.4168)
+            val decRad = Math.toRadians(-29.0078)
+            val haRad = lstRad - raRad
+            val (alt, az) = eqToHor(decRad, haRad, latRad)
+
+            results.add(
+                PlanetInfo(
+                    id = "MILKY_WAY_CORE",
+                    nameVi = "Tâm Ngân Hà (Sagittarius A*)",
+                    nameEn = "Galactic Center",
+                    symbol = "🌌",
+                    color = Color(0xFFFF80AB),
+                    glowColor = Color(0xFFE040FB),
+                    altitude = alt,
+                    azimuth = az,
+                    distanceAu = 26000.0 * 63241.07, // ~26.000 năm ánh sáng
+                    magnitude = -3.0f,
+                    constellationVi = "Nhân Mã",
+                    constellationSymbol = "♐",
+                    type = CelestialBodyType.MILKY_WAY,
+                    descriptionVi = "Vùng trung tâm đậm đặc và rực rỡ nhất của Dải Ngân Hà, nơi chứa hố đen siêu khối lượng Sagittarius A* nặng gấp 4 triệu lần Mặt Trời.",
+                    observationTipVi = "Thời điểm vàng chụp ảnh: Các đêm mùa hè & thu (tháng 4 - 9) lúc không trăng. Hướng máy về phía Nam khi góc ngẩng > 20°.",
+                    diameterKm = 100000L * 9460730472580L // ~100.000 ly
+                )
+            )
+        }
+
+        // 5. CÁC THIÊN THỂ DEEP-SKY NỔI BẬT & NGÔI SAO ĐỊNH HƯỚNG
+        data class DeepSkyTarget(
+            val id: String,
+            val nameVi: String,
+            val nameEn: String,
+            val symbol: String,
+            val color: Color,
+            val glowColor: Color,
+            val raDeg: Double,
+            val decDeg: Double,
+            val distLy: Double,
+            val mag: Float,
+            val constVi: String,
+            val constSym: String,
+            val type: CelestialBodyType,
+            val descVi: String,
+            val tipVi: String
+        )
+
+        val deepSkyList = listOf(
+            DeepSkyTarget(
+                id = "ANDROMEDA",
+                nameVi = "Thiên Hà Tiên Nữ (M31)",
+                nameEn = "Andromeda Galaxy",
+                symbol = "🌀",
+                color = Color(0xFF80DEEA),
+                glowColor = Color(0xFF00E5FF),
+                raDeg = 10.6847,
+                decDeg = 41.2687,
+                distLy = 2500000.0,
+                mag = 3.44f,
+                constVi = "Tiên Nữ",
+                constSym = "And",
+                type = CelestialBodyType.DEEP_SKY,
+                descVi = "Thiên hà xoắn ốc khổng lồ gần Ngân Hà nhất, chứa hơn 1.000 tỷ ngôi sao. Có thể thấy bằng mắt thường dưới bầu trời tối.",
+                tipVi = "Dùng ống kính tiêu cự 85mm - 200mm và chế độ chụp Stacking phơi sáng để ghi nhận chi tiết đĩa xoắn ốc."
+            ),
+            DeepSkyTarget(
+                id = "ORION_NEBULA",
+                nameVi = "Tinh Vân Lạp Hộ (M42)",
+                nameEn = "Orion Nebula",
+                symbol = "✨",
+                color = Color(0xFFFF8A80),
+                glowColor = Color(0xFFFF5252),
+                raDeg = 83.8221,
+                decDeg = -5.3911,
+                distLy = 1344.0,
+                mag = 4.0f,
+                constVi = "Lạp Hộ (Thợ Săn)",
+                constSym = "Ori",
+                type = CelestialBodyType.DEEP_SKY,
+                descVi = "Nhà trẻ ươm sao sáng và rực rỡ nhất bầu trời, nằm ngay thanh kiếm phía dưới Thắt lưng của chàng thợ săn Orion.",
+                tipVi = "Dễ dàng chụp được đám mây khí phát sáng màu hồng tím ngay cả với máy ảnh điện thoại khi trời trong."
+            ),
+            DeepSkyTarget(
+                id = "PLEIADES",
+                nameVi = "Cụm Sao Tua Rua (M45)",
+                nameEn = "Pleiades (Seven Sisters)",
+                symbol = "💎",
+                color = Color(0xFF82B1FF),
+                glowColor = Color(0xFF448AFF),
+                raDeg = 56.75,
+                decDeg = 24.11,
+                distLy = 444.0,
+                mag = 1.6f,
+                constVi = "Kim Ngưu",
+                constSym = "Tau",
+                type = CelestialBodyType.DEEP_SKY,
+                descVi = "Cụm sao mở màu xanh lam tuyệt đẹp bao phủ bởi màn sương bụi phản xạ ánh sáng kỳ ảo.",
+                tipVi = "Nổi bật trên bầu trời mùa đông. Mắt thường có thể đếm được 6-7 ngôi sao sáng nhất."
+            ),
+            DeepSkyTarget(
+                id = "SIRIUS",
+                nameVi = "Sao Thiên Lang (Sirius)",
+                nameEn = "Sirius",
+                symbol = "⭐",
+                color = Color(0xFFFFFFFF),
+                glowColor = Color(0xFF80D8FF),
+                raDeg = 101.287,
+                decDeg = -16.716,
+                distLy = 8.6,
+                mag = -1.46f,
+                constVi = "Đại Khuyển",
+                constSym = "CMa",
+                type = CelestialBodyType.STAR,
+                descVi = "Ngôi sao sáng nhất trên bầu trời đêm của Trái Đất, thuộc chòm sao Đại Khuyển.",
+                tipVi = "Ánh sáng trắng xanh lấp lánh cực mạnh, là mốc lấy nét và căn chỉnh hoàn hảo cho kính thiên văn."
+            ),
+            DeepSkyTarget(
+                id = "POLARIS",
+                nameVi = "Sao Bắc Cực (Polaris)",
+                nameEn = "North Star (Polaris)",
+                symbol = "🌟",
+                color = Color(0xFFFFF9C4),
+                glowColor = Color(0xFFFFD54F),
+                raDeg = 37.954,
+                decDeg = 89.264,
+                distLy = 433.0,
+                mag = 1.98f,
+                constVi = "Tiểu Hùng",
+                constSym = "UMi",
+                type = CelestialBodyType.STAR,
+                descVi = "Ngôi sao chỉ đúng phương Bắc Thiên Cầu, trung tâm vòng quay của tất cả các chòm sao phía Bắc.",
+                tipVi = "Cực kỳ hữu ích để căn chỉnh trục Bắc (Polar Alignment) khi chụp ảnh vệt sao (Star Trails) hoặc dùng chân bám sao."
+            )
+        )
+
+        for (t in deepSkyList) {
+            val raRad = Math.toRadians(t.raDeg)
+            val decRad = Math.toRadians(t.decDeg)
+            val haRad = lstRad - raRad
+            val (alt, az) = eqToHor(decRad, haRad, latRad)
+
+            results.add(
+                PlanetInfo(
+                    id = t.id,
+                    nameVi = t.nameVi,
+                    nameEn = t.nameEn,
+                    symbol = t.symbol,
+                    color = t.color,
+                    glowColor = t.glowColor,
+                    altitude = alt,
+                    azimuth = az,
+                    distanceAu = t.distLy * 63241.07,
+                    magnitude = t.mag,
+                    constellationVi = t.constVi,
+                    constellationSymbol = t.constSym,
+                    type = t.type,
+                    descriptionVi = t.descVi,
+                    observationTipVi = t.tipVi,
+                    diameterKm = (t.distLy * 1000).toLong()
+                )
+            )
+        }
+
         return results
+    }
+
+    /**
+     * Tọa độ một điểm trên Dải Ngân Hà
+     */
+    data class MilkyWayPoint(
+        val altitude: Float,
+        val azimuth: Float,
+        val galacticLonDeg: Int,
+        val labelVi: String? = null
+    )
+
+    /**
+     * Tính toán chuỗi điểm dọc theo Mặt phẳng Ngân Hà (Galactic Equator b=0°)
+     * sử dụng ma trận quay IAU J2000 chuẩn giữa Tọa độ Thiên hà và Tọa độ Xích đạo.
+     */
+    fun calculateMilkyWayPath(
+        timeMillis: Long = System.currentTimeMillis(),
+        latitude: Double = 21.0285,
+        longitude: Double = 105.8542,
+        stepDeg: Int = 4
+    ): List<MilkyWayPoint> {
+        val jd = (timeMillis.toDouble() / 86400000.0) + 2440587.5
+        val dJ2000 = jd - 2451545.0
+        val gmstDeg = normalizeDeg(280.46061837 + 360.98564736629 * dJ2000)
+        val lstRad = Math.toRadians(normalizeDeg(gmstDeg + longitude))
+        val latRad = Math.toRadians(latitude)
+
+        // IAU J2000 Rotation matrix: Galactic (b=0) -> Equatorial
+        val r00 = -0.05540621; val r01 =  0.49405101
+        val r10 = -0.87295905; val r11 = -0.44576694
+        val r20 = -0.48463662; val r21 =  0.74646194
+
+        val points = mutableListOf<MilkyWayPoint>()
+        for (lDeg in 0 until 360 step stepDeg) {
+            val lRad = Math.toRadians(lDeg.toDouble())
+            val xGal = cos(lRad)
+            val yGal = sin(lRad)
+
+            val xEq = r00 * xGal + r01 * yGal
+            val yEq = r10 * xGal + r11 * yGal
+            val zEq = r20 * xGal + r21 * yGal
+
+            val raRad = atan2(yEq, xEq)
+            val decRad = asin(zEq.coerceIn(-1.0, 1.0))
+            val haRad = lstRad - raRad
+            val (alt, az) = eqToHor(decRad, haRad, latRad)
+
+            val label = when (lDeg) {
+                0 -> "Tâm Ngân Hà (Core)"
+                76 -> "Dải Ngân Hà • Cygnus"
+                180 -> "Dải Ngân Hà • Auriga"
+                280 -> "Dải Ngân Hà • Carina"
+                else -> null
+            }
+
+            points.add(MilkyWayPoint(alt, az, lDeg, label))
+        }
+        return points
     }
 
     /**
@@ -415,9 +640,10 @@ object SolarSystemEngine {
     ): List<Pair<Float, Float>> {
         val jd = (timeMillis.toDouble() / 86400000.0) + 2440587.5
         val d = jd - 2451543.5
+        val dJ2000 = jd - 2451545.0
         val eclRad = Math.toRadians(23.4393 - 3.563e-7 * d)
 
-        val gmstDeg = normalizeDeg(280.46061837 + 360.98564736629 * d)
+        val gmstDeg = normalizeDeg(280.46061837 + 360.98564736629 * dJ2000)
         val lstRad = Math.toRadians(normalizeDeg(gmstDeg + longitude))
         val latRad = Math.toRadians(latitude)
 
